@@ -3,27 +3,6 @@ from collections import defaultdict
 import itertools
 import random
 
-#def total_arrive_leave(n_pop):
-#
-#	n = len(n_pop[0])
-#	n_time = len(n_pop)
-#	d = defaultdict(lambda: np.array([0 for x in range(n)]))
-#	for i in range(n_time):
-#		d[i] = n_pop[i]
-#
-#	arrive_leave = []
-#	for i in range(n_time):
-#		#leave, arrive
-#		arrive_leave.append([-1*sum(filter(lambda x: x<0, d[i] - d[i+1])),sum(filter(lambda x: x>0, d[i] - d[i-1]))])
-#
-#	#correct arrive_leave 
-#	#nothing arrives at t=0
-#	arrive_leave[0][1] = 0
-#	#nothing leaves at t=T
-#	arrive_leave[-1][0] = 0
-#
-#	return arrive_leave
-
 def total_arrive_leave(pop):
 
 	temp_pop = []; temp_al = [[0,0]]
@@ -35,51 +14,47 @@ def total_arrive_leave(pop):
 	return temp_al
 
 def bikes(temp_al, pop):
-
-	journies = []
-	#print "start"
-	#print temp_al
-
+	
 	leave = [x[0] for x in temp_al]#all leaving
-	#print leave
 	leave_values = [x[0] for x in temp_al if x[0]]#list of leaving values
-	#print leave_values
 	leave_indexes = []
 	for value in leave_values:
 		i = leave.index(value)
 		leave[i] = 0
-		leave_indexes.append(i)
-	#print "leave_indexes", leave_indexes
+		for x in range(temp_al[i][0]):
+			leave_indexes.append(i)
 	
 
 	arrive = [x[1] for x in temp_al]#all leaving
-	#print arrive
 	arrive_values = [x[1] for x in temp_al if x[1]]#list of indexes for leaving
-	#print arrive_values
 	arrive_indexes = []
 	for value in arrive_values:
 		i = arrive.index(value)
 		arrive[i] = 0
-		arrive_indexes.append(i)
-	#print arrive_indexes
-	#print "end"
+		for x in range(temp_al[i][1]):
+			arrive_indexes.append(i)
+	#indexes created
 
-	
-	r = 0#this is the remainder 
+	#r = 0#this is the remainder 
 	journies = []
 	while len(leave_indexes)> 0 or len(arrive_indexes) > 0:
-		if r == 0:
-			l = leave_indexes.pop(0)
-			a = arrive_indexes.pop(0)
-
-		elif r > 0: # more than one bike left, get another arriving time
-			a = arrive_indexes.pop(0)
-
-		elif r < 0: # more than one bike arrived, get another leaving time
-			l = leave_indexes.pop(0)
-
-		leave = al[l][0]
-		arrive = al[a][1]
+		l = leave_indexes.pop(0)
+		a = arrive_indexes.pop(0)
+#		if r == 0:
+#			print "r is zero"
+#			l = leave_indexes.pop(0)
+#			a = arrive_indexes.pop(0)
+#
+#		elif r > 0: # more than one bike left, get another arriving time
+#			print "pop arrive"
+#			a = arrive_indexes.pop(0)
+#
+#		elif r < 0: # more than one bike arrived, get another leaving time
+#			print "pop leave"
+#			l = leave_indexes.pop(0)
+#
+		leave = temp_al[l][0]
+		arrive = temp_al[a][1]
 
 		delta_l = np.array(pop[l]) - np.array(pop[l-1])
 		delta_a = np.array(pop[a]) - np.array(pop[a-1])
@@ -91,47 +66,10 @@ def bikes(temp_al, pop):
 		#pop[a][es] -= 1	
 		journies.append([l, a, ss, es])
 	
-		r = leave - arrive
-
+		#r = leave - arrive
+		
 	return journies	
 
-#def bikes(al, pop):
-#
-#	n = len(pop[0])
-#	n_time = len(pop)
-#	journey_list = []
-#
-#	list_which_times(al, pop)
-#
-#	for i in range(n_time):
-#		print "i",i
-#		if al[i][0] > 0:
-#			print "al[i][0]",al[i][0]
-#			s = 0
-#			j = i + 1
-#			leaving_correct = n_pop[i] - n_pop[i+1]
-#			while (s < al[i][0]):
-#				print n_pop[i], n_pop[j],al[j]
-#				#at each step subtract off those that come before
-#				arriving_correct = [ x if x>0 else 0 for x in n_pop[j] - n_pop[i]]
-#				for k in range(j-1, i, -1):
-#					arriving_correct -= np.array([ x if x>0 else 0 for x in n_pop[k] - n_pop[i]])
-#				#each nonzero value in arriving_correct correspons to a journey
-#				for k in range(len(arriving_correct)):
-#					if arriving_correct[k]>0:
-#						#index of the leaving station, first nonzero element from leaving_correct
-#						print "leaving", leaving_correct
-#						l = map(bool, leaving_correct).index(True)
-#						print "A bike leaves station %d at time %d arriving at station %d at time %d" %(l,i,k,j)
-#						journey_list.append([i,j,l,k])
-#						#print arriving_correct,al[j]
-#						leaving_correct[l] -= 1
-#				s += al[j][1]
-#				al[j][1] = 0
-#				j +=1
-#		al[i][0] = 0
-#	return journey_list
-#
 def checks(al):
 
 	if sum([x[0] for x in al]) != sum([x[1] for x in al]):
@@ -144,18 +82,26 @@ def checks(al):
 			exit(1)
 		traveling += x[0]
 
-def valid_journey(T, s):
+def valid_journey(T, s, pop):
 
-	#journey = start_time end_time start_station end_station
-	#this will generated invalid journeys 
-	#valid journies start after the first timestep and end before the last
-	j = [random.randint(1,T-2) for x in range(2)] + [random.randint(0,s-1) for x in range(2)]
-	#check for validity:
-	if j[1] < j[0]: #bike arrives earlier than it left
-		j = valid_journey(T,s)
-	if j[0] == j[1] or j[2] == j[3]: #bikes can't leave and arrive at the same station or time
-		j = valid_journey(T,s) 
-	return j	
+	st = random.randint(1,T-2)
+	et = random.choice([ x for x in range(1,T) if x > st])
+
+	start = [i for i in range(s) if pop[st][i] > 0]
+	try:
+		ss = random.choice(start)
+	except:
+		#no valid journey allowed
+		return None
+		print "ERROR, var dump"
+		print start, st, et, pop	
+		exit(1)
+	
+	end = range(s)
+	end.remove(ss)	
+	es = random.choice(end)
+
+	return [st, et, ss, es]
 	
 class Population():
 
@@ -166,6 +112,7 @@ class Population():
 		self.m = m
 		self.__gen_station()
 		self.__gen_timesteps()
+		self.journies = []
 		
 	def __gen_station(self):
 		self.basic_station = [random.randint(0,self.m-1) for x in range(self.s)]
@@ -175,6 +122,7 @@ class Population():
 	
 	def add_journey(self, journey):
 		[st, et, ss, es] = journey
+		self.journies.append(journey)
 
 		pop_new = []
 		for t in range(self.T):
@@ -193,16 +141,56 @@ def random_pop(T, s, m, j):
 #	j = 1 #number of journies that are to be taken
 	
 	test_pop = Population(T, s, m)
-	print "pre",test_pop.pop
+	#print "pre",test_pop.pop
 	for i in range(j):
-		journey = valid_journey(T, s)
-		print "journey", journey
-		test_pop.add_journey(journey)
-	print "post",test_pop.pop
-	return test_pop.pop
-	
-if __name__ == "__main__":
+		journey = valid_journey(T, s, test_pop.pop)
+		#print "journey", journey
+		if journey != None:
+			test_pop.add_journey(journey)
+	#print "post",test_pop.pop
+	return [test_pop.journies, test_pop.pop]
 
+def report(journies, real_journies, pop):
+	
+	s = 0; p = 0; j = 0
+	if len(real_journies) == len(journies):
+		deltas = sum(map(lambda x, y: sum(np.array(x) - np.array(y)), sorted(journies), sorted(real_journies)))
+		if abs(deltas) != 0:
+			#print "ERROR: times or stations of predicited journeies are incorrect"
+			#print "pop", pop
+			#print "real_journies", real_journies
+			#print "journies", journies
+			#print "end of error"
+			p = 1
+		else:
+			#print "SUCCESS: everything predicited correctly"
+			#print "pop", pop
+			#print "real_journies", real_journies
+			#print "journies", journies
+			#print "end of success"
+			s = 1
+	else:
+		#[1, 2, 1, 0], [2, 3, 0, 1]]
+		#print "real", real_journies
+		if [sum(pop[0]) != sum(pop[-1])]:# two journies look like one
+			#print "SUCCESS: mild success. journey reduction"
+			#print "pop", pop
+			#print "real_journies", real_journies
+			#print "journies", journies
+			#print "end of success"
+			s = 1
+		else:
+			#print "ERROR: incorrect number of journies predicted"
+			#print "pop", pop
+			#print "real_journies", real_journies
+			#print "journies", journies
+			#print "end of error"
+			j = 1
+	
+	#success, fail predict, fail journies
+	return np.array([s, p, j])
+
+def multi_trial():	
 	#negaive bike numbers allowed.....why forbid it??
 	#pop = [[2,0,0],[0,0,0],[0,1,0],[0,1,1]] #works
 	#pop = [[2,0,1],[0,0,1],[0,1,1],[0,1,2]] #works
@@ -211,13 +199,39 @@ if __name__ == "__main__":
 	#pop = [[3, 4, 8], [3, 4, 8], [3, 4, 8], [3, 4, 8], [4, 4, 7]] # weird effect due to travel occuring duing 1 time step. have to identify and disallow this type of transfer # this is now caught correctly
 	#pop = [[1, 4, 7], [1, 4, 6], [0, 4, 6], [0, 6, 6], [0, 6, 6]]# double journey test. works with verison two and three
 	#print "journey", [1, 3, 2, 1], [2, 3, 0, 1]
+	#pop = [[4, 2], [4, 1], [4, 1], [4, 2]] # this is a double journey that comes up as a single journey. this is because the arriving of the first and leaving of the second occur at the same time
+	#real_journies [[1, 2, 1, 0], [2, 3, 0, 1]]
 
-	[T, s, m, j] = [5, 3, 10, 2]
-	#print pop
-	pop = random_pop(T, s, m, j)	
 
-	al = total_arrive_leave(pop)
-	checks(al)
-	journies = bikes(al, pop)
+	for time in range(4,20):
+		for station in range(2,20):
+			count = np.array([0, 0, 0])
+			for x in range(20):
+				[T, s, m, j] = [time, station, 10, 4]
+				[real_journies, pop] = random_pop(T, s, m, j)	
+			
+				al = total_arrive_leave(pop)
+				checks(al)
+				#print "al", al
+				journies = bikes(al, pop)
+				results = report(journies, real_journies, pop)
+		
+				count += results
+			print time, station, count[0], count[1], count[2]
 	
-	print journies
+if __name__ == "__main__":
+
+#				multi_trial()
+				[T, s, m, j] = [6, 3, 10, 4]
+				[real_journies, pop] = random_pop(T, s, m, j)	
+			
+				al = total_arrive_leave(pop)
+				checks(al)
+				#print "al", al
+				journies = bikes(al, pop)
+				results = report(journies, real_journies, pop)
+				print sorted(real_journies)
+				print sorted(journies)
+				print "al", al
+				print pop
+
