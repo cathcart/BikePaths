@@ -6,6 +6,8 @@ import math
 import numpy as np
 
 def get_station_locations():
+
+	#need to catch existance error here
 	tree = etree.parse('carto.xml')
 
 	locations = {}
@@ -22,6 +24,34 @@ def get_station_locations():
 
 	return locations
 
+def distance(start, end):
+
+	#calculate the distance between two long lat points with the haversine formula
+	lat1, lon1 = start
+	lat2, lon2 = end
+	radius = 6371 # km
+
+	dlat = math.radians(lat2-lat1)
+	dlon = math.radians(lon2-lon1)
+	a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
+	    * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
+	c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+	d = radius * c
+
+	return d*1000
+
+def bearing(start, end):
+
+	#calculate the bearing between two long lat points with the haversine formula
+	lat1, lon1 = start
+	lat2, lon2 = end
+	radius = 6371 # km
+	
+	dlat = math.radians(lat2-lat1)
+	dlon = math.radians(lon2-lon1)
+	
+	return math.atan2(math.sin(dlon) * math.cos(lat2), math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.sin(lat2) * math.cos(dlon))
+	
 class Path(object):
 	
 	def __init__(self, start, end):
@@ -100,8 +130,8 @@ class Path(object):
 		[start, end] = [something.index(x) for x in nearest]
 
 		#create a vector
-		one = np.array(path.path_points[start])
-		two = np.array(path.path_points[end])
+		one = np.array(self.path_points[start])
+		two = np.array(self.path_points[end])
 		vec = two - one
 
 		return vec*time + one
