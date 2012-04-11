@@ -19,10 +19,12 @@ def get_station_locations():
 	for value in tree.getiterator(tag='marker'): 
 		n = value.get('number')
 		lat = value.get('lat')
-		lng = str(abs(float(value.get('lng'))))
+		#lng = str(abs(float(value.get('lng'))))
+		lng = value.get('lng')
 		name = value.get('name')
 
-		locations[int(n)] = ("%sN%sW" % (lat, lng))
+		locations[int(n)] = (float(lat), float(lng))
+		#locations[int(n)] = ("%sN%sW" % (lat, lng))
 
 	return locations
 
@@ -91,7 +93,8 @@ class Path(object):
 		else:
 			print "file doesn't exist. download from google"
 		
-			directions = urllib2.urlopen("http://maps.googleapis.com/maps/api/directions/xml?origin=%s&destination=%s&sensor=false" % (locations[start], locations[end]) ).read()
+			#directions = urllib2.urlopen("http://maps.googleapis.com/maps/api/directions/xml?origin=%s&destination=%s&sensor=false" % (locations[start], locations[end]) ).read()
+			directions = urllib2.urlopen("http://maps.googleapis.com/maps/api/directions/xml?origin=%s&destination=%s&sensor=false" % (str(locations[start]), str(abs(locations[end]))) ).read()
 			file("paths/path_%d_%d.xml" %(start, end), "w").write(directions)
 		
 		return directions

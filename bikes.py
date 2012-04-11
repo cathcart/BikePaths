@@ -1,5 +1,5 @@
 import numpy as np
-from collections import defaultdict 
+#from collections import defaultdict 
 import itertools
 import random
 
@@ -35,24 +35,10 @@ def bikes(temp_al, pop):
 			arrive_indexes.append(i)
 	#indexes created
 
-	#r = 0#this is the remainder 
 	journies = []
 	while len(leave_indexes)> 0 or len(arrive_indexes) > 0:
 		l = leave_indexes.pop(0)
 		a = arrive_indexes.pop(0)
-#		if r == 0:
-#			print "r is zero"
-#			l = leave_indexes.pop(0)
-#			a = arrive_indexes.pop(0)
-#
-#		elif r > 0: # more than one bike left, get another arriving time
-#			print "pop arrive"
-#			a = arrive_indexes.pop(0)
-#
-#		elif r < 0: # more than one bike arrived, get another leaving time
-#			print "pop leave"
-#			l = leave_indexes.pop(0)
-#
 		leave = temp_al[l][0]
 		arrive = temp_al[a][1]
 
@@ -66,8 +52,6 @@ def bikes(temp_al, pop):
 		#pop[a][es] -= 1	
 		journies.append([l, a, ss, es])
 	
-		#r = leave - arrive
-		
 	return journies	
 
 def checks(al):
@@ -218,6 +202,11 @@ def multi_trial():
 		
 				count += results
 			print time, station, count[0], count[1], count[2]
+
+def pop_to_journies(pop):
+	al = total_arrive_leave(pop)
+	checks(al)
+	return bikes(al, pop)
 	
 if __name__ == "__main__":
 
