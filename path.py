@@ -7,7 +7,11 @@ import numpy as np
 
 def get_station_locations():
 
-	#need to catch existance error here
+	if not os.path.exists("carto.xml"):
+		#raise NameError("Can't find carto.xml")
+		carto = urllib2.urlopen("http://www.dublinbikes.ie/service/carto").read()
+		file("carto.xml", "w").write(carto)
+		
 	tree = etree.parse('carto.xml')
 
 	locations = {}
@@ -18,8 +22,6 @@ def get_station_locations():
 		lng = str(abs(float(value.get('lng'))))
 		name = value.get('name')
 
-		#print "%s %s %s \"%s\"" %(n,lat,lng,name)
-		#locations[int(n)] = (lat, lng)
 		locations[int(n)] = ("%sN%sW" % (lat, lng))
 
 	return locations
@@ -58,15 +60,26 @@ class Path(object):
 
 		self.start = start
 		self.end = end
+		self.fractional_times = []
+		self.reverse = False
+
 		#load station information
 		locations = get_station_locations()
+
 		#get path data
 		map_data = self.__call_maps(start, end, locations)
 		self.__parse_map(map_data)
-		self.fractional_times = []
 
 	def __call_maps(self, start, end, locations):
 	
+		#check if paths folder exists
+		if not os.path.exists("paths"):
+			try:
+				os.mkdir("paths")
+			except OSError:
+				print "Something has gone horribly wrong. Tried to create a folder where one already existed. Exiting now."
+				os.exit(1)
+				
 		#check if the file exists first
 		if os.path.exists("paths/path_%d_%d.xml" %(start, end)) or os.path.exists("paths/path_%d_%d.xml" %(end, start)):
 			print "Load path info from file"
@@ -74,6 +87,7 @@ class Path(object):
 				directions = file("paths/path_%d_%d.xml" %(start, end)).read()
 			else:
 				directions = file("paths/path_%d_%d.xml" %(end, start)).read()
+				self.reverse = True
 		else:
 			print "file doesn't exist. download from google"
 		
@@ -87,7 +101,13 @@ class Path(object):
 		tree = etree.fromstring(map_data)
 	
 		p = tree.findtext("route/overview_polyline/points")
-		self.path_points = decoder.decode_line(p)
+
+		points = decoder.decode_line(p)
+
+		if self.reverse:
+			self.path_points = [x for x in reversed(points)]
+		else:
+			self.path_points = points[:]
 	
 		steps = tree.findall('route/leg/step/distance')
 		self.distances = [int(x.findtext('value')) for x in steps]
@@ -138,12 +158,14 @@ class Path(object):
 
 if __name__ == "__main__":
 
-	#problem here with reversing the start and end stations. should be easy enough to fix really though
-
 	start = 25; end = 26
+	path = Path(start, end)
+	print path.path_points
+
 	start = 26; end = 25
 	path = Path(start, end)
+	print path.path_points
 
-	for x in np.arange(0,1.1,0.1):
-		print path.position(x)
-	print sorted(path.path_points)
+#	for x in np.arange(0,1.1,0.1):
+#		print path.position(x)
+#	print sorted(path.path_points)
