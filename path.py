@@ -129,6 +129,7 @@ class Path(object):
 		return d*1000
 
 	def position(self, time):
+
 		#calculate what fraction of the total journey each point corresponds to if we haven't already
 		if len(self.fractional_times) == 0:
 			points = self.path_points[:]
