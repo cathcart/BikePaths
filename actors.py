@@ -29,7 +29,10 @@ def convert_long_lat(value):
 		return None
 
 	#start = [float(x) for x in value.strip("W").split("N")]	
-	origin = [53.33080, -6.27527]
+	#origin = [53.33080, -6.27527]
+	#origin = [53.33110, -6.28575]
+	origin = [180, 85]
+	#origin = [53.34418, -6.26478]
 	start = value
 
 	theta = path.bearing(origin, start)
@@ -42,69 +45,74 @@ def mercator_projection(value):
 	if value == None:
 		return None
 
-	radius = 6371 # km	
-	#origin = [53.33110, -6.28575]
-	#origin = [180, 85]
-	origin = [53.34418, -6.26478]
+	[lat, lng] = value
 
-	[lat0, lng0] = [math.radians(x) for x in origin]
-	[lat1, lng1] = [math.radians(x) for x in value]
+	radius =  6378137 # m	epsg:3857 std
+	x = math.radians(lng) * radius
+	y = radius * math.log(math.tan(math.radians((90 + lat)/2)))
 
-	x = radius * (lng1 - lng0)
+	return (x, y)
 
-	y = radius * math.log((1 + math.sin(lat1))/(math.cos(lat1)))
-
-	return [x, y]
 	
 if __name__ == "__main__":
 	x = []
 	y = []
 
-	#plt.axis([min(x)-1, max(x)+1, min(y)-1, max(y)+1])
-	#plt.scatter(x, y, 'ro')
-
+#	#plt.axis([min(x)-1, max(x)+1, min(y)-1, max(y)+1])
+#	#plt.scatter(x, y, 'ro')
+#
 	locations = path.get_station_locations()
-	for t in locations.values():
-		#[a, b] = convert_long_lat(t)
-		[a, b] = mercator_projection(t)
-		x.append(a)
-		y.append(b)
-
-	min_x = min([t for t in x])
-	max_x = max([t for t in x])
-	min_y = min([t for t in y])
-	max_y = max([t for t in y])
-
-	for p in zip(x,y):
-		print p[0], p[1]
-		#print 640*(p[0] - min_x)/(max_x-min_x), 640*(p[1] - min_y)/(max_y-min_y)
 		
+	#mercator test
+	print "should be (-626172.1357121646, 6887893.4928337997)"
+	print mercator_projection((52.4827802220782, -5.625 ))
 
-	journey = [2, 5, 25, 26]
+	#journey = [2, 5, 25, 26]
+	journey = [2, 5, 1, 2]
 	one = Actor(journey)
 	journey = [4, 9, 26, 25]
 	two = Actor(journey)
 
-	agents = [one, two]
+	#agents = [one, two]
+	agents = [one]
 	
-	#trial_path = path.Path(journey[2], journey[3])
+	#plt.axis([0, 3.5, 0, 8000])
+	plt.hold(b=True)
 
-	#plt.plot(x, y, 'ro')
-	#plt.savefig("test.png")
+	start = (locations[one.start])[:]
+	end = (locations[one.end])[:]
+	print "Path gis: ", start, end
+	print "path ", one.path_points
 
-	for t in range(11):
-		#print t, [convert_long_lat(x.call(t)) for x in agents]
-		#print t, [mercator_projection(x.call(t)) for x in agents]
-		print t, [x.call(t) for x in agents]
 
-#		if t >= journey[0] and t < journey[1]:	
-#			a = trial_path.position(t)
-#			bike = str(a[0])+"N"+str(abs(a[1]))+"W"
-#			[x, y] = convert_long_lat(bike)
+	x0 = []
+	y0 = []
+	for p in one.path_points:
+		[a, b] = mercator_projection(p)[:]
+		x0.append(a)
+		y0.append(b)
+	plt.plot(x0, y0, 'ro')
+	plt.savefig("test.png")
+
+	x0 = []
+	y0 = []
+	for p in two.path_points:
+		[a, b] = mercator_projection(p)[:]
+		x0.append(a)
+		y0.append(b)
+	#plt.plot(x0, y0, 'bo', alpha = 0.25)
+	plt.plot(x0, y0, 'bo')
+	plt.savefig("test_alt.png")
+
+#	for t in range(11):
+#		x = []
+#		y = []
+#		for person in agents:
+#			result = mercator_projection(person.call(t)) 
+#			if result != None:
+#				[a, b] = result
+#				x.append(a); y.append(b)
 #
-#			if IsPlotting:	
-#				plt.plot(x, y, 'bo')
-#				plt.savefig("test%d.png" % t)
-#			else:
-#				print x,y
-#	
+#		plt.plot(x, y, 'bo')
+#		print t, x,y
+#		plt.savefig("test%d.png" % t)

@@ -94,7 +94,8 @@ class Path(object):
 			print "file doesn't exist. download from google"
 		
 			#directions = urllib2.urlopen("http://maps.googleapis.com/maps/api/directions/xml?origin=%s&destination=%s&sensor=false" % (locations[start], locations[end]) ).read()
-			directions = urllib2.urlopen("http://maps.googleapis.com/maps/api/directions/xml?origin=%s&destination=%s&sensor=false" % (str(locations[start]), str(abs(locations[end]))) ).read()
+			#need to catch this failing
+			directions = urllib2.urlopen("http://maps.googleapis.com/maps/api/directions/xml?origin=%s&destination=%s&sensor=false" % (str(locations[start][0])+"N"+str(abs(locations[start][1]))+"W", str(locations[end][0])+"N"+str(abs(locations[end][1]))+"W" ) ).read()
 			file("paths/path_%d_%d.xml" %(start, end), "w").write(directions)
 		
 		return directions
