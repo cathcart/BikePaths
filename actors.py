@@ -2,6 +2,7 @@ import path
 import bikes
 import math
 import random
+import numpy as np
 try:
 	from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 	from matplotlib.figure import Figure
@@ -12,7 +13,8 @@ except ImportError:
 	IsPlotting = False
 	raise NameError("I'm not going to plot anything for you")
 
-#i like this, it works
+palette = ["#F1B2E1", "#B1DDF3", "#FFDE89", "#E3675C", "#C2D985"]		
+
 class Actor(path.Path):
 	def __init__(self, journey):
 		self.start_time = journey[0]
@@ -21,50 +23,35 @@ class Actor(path.Path):
 
 		super(Actor, self).__init__(journey[2], journey[3])
 
+		#self.color = palette[self.start_time%len(palette)]#time
+		self.color = palette[self.start%len(palette)]#start_station
+
 	def call(self, time):
 		if time >= self.start_time and time < self.end_time:
-			run_time = time - self.start
+			run_time = time - self.start_time
 			time_fraction = run_time/self.time_delta
 			return super(Actor, self).position(time_fraction)
 		else:
 			return None
 	
 	def plot(self, plt_obj, position):
-		color = random.choice(["#F1B2E1", "#B1DDF3", "#FFDE89", "#E3675C", "#C2D985"])
-		x0 = []
-		y0 = []
-		#plot weak tail
-		for p in bike.points_to_here(position):
-			[a, b] = mercator_projection(p)[:]
-			x0.append(a)
-			y0.append(b)
-		plt_obj.plot(x0, y0, color, alpha = 0.1, linewidth=4)
 
-		x0 = []
-		y0 = []
-		#plot mid tail
-		temp = [str(x[0])+"&"+str(x[1]) for x in bike.points_to_here(position)]
-		temp2 = [str(x[0])+"&"+str(x[1]) for x in bike.points_to_here(0.5*position)]
-		temp3 = [[float(y) for y in x.split("&")] for x in temp if x not in temp2]
-		for p in temp3:
-			(a, b) = mercator_projection(p)[:]
-			x0.append(a)
-			y0.append(b)
-		plt_obj.plot(x0, y0, color, alpha = 0.3, linewidth=4)
+		for cut in np.arange(0,1,0.2):
+			x0 = []
+			y0 = []
+			#plot tail
+			my_alpha = 0.1
+			for p in [x for x in bike.points_to_here(position) if x not in bike.points_to_here(cut*position)]:
+				[a, b] = mercator_projection(p)[:]
+				x0.append(a)
+				y0.append(b)
+				if cut != 0:
+					my_alpha = cut
+			plt_obj.plot(x0, y0, self.color, alpha = my_alpha, linewidth=4)
 
-		x0 = []
-		y0 = []
-		#plot near tail
-		temp = [str(x[0])+"&"+str(x[1]) for x in bike.points_to_here(position)]
-		temp2 = [str(x[0])+"&"+str(x[1]) for x in bike.points_to_here(0.75*position)]
-		temp3 = [[float(y) for y in x.split("&")] for x in temp if x not in temp2]
-		for p in temp3:
-			(a, b) = mercator_projection(p)[:]
-			x0.append(a)
-			y0.append(b)
-		plt_obj.plot(x0, y0, color, alpha = 0.7, linewidth=4)
-	
-#		#ax.plot(x0[-1], y0[-1], 'ko')
+		#plt_obj.plot(x0[-1], y0[-1], c=self.color, marker="o", markeredgeself.color=self.color)
+		plt_obj.plot(x0[-1], y0[-1], "ko")
+
 
 	
 def mercator_projection(value):
@@ -83,8 +70,7 @@ def mercator_projection(value):
 	
 if __name__ == "__main__":
 		
-	#[T, s, m, j] = [200, 44, 100, 190]
-	[T, s, m, j] = [20, 44, 100, 1]
+	[T, s, m, j] = [200, 44, 100, 190]
 	[real_journies, pop] = bikes.random_pop(T, s, m, j)
 	journies = bikes.pop_to_journies(pop)
 
@@ -97,14 +83,14 @@ if __name__ == "__main__":
 	fig = Figure()
 	canvas = FigureCanvas(fig)
 	ax = fig.add_subplot(111)
+	ax.set_frame_on(False)
+	ax.set_axis_off()
+	canvas.resize(3510, 2490)
 	end = 0.7
 
 	for bike in agents:
 		bike.plot(ax, end)
-
+	
 	#plot output
-	ax.set_frame_on(False)
-	ax.set_axis_off()
-	canvas.resize(3510, 2490)
-	canvas.print_figure('new', dpi=300)
-
+	#canvas.print_figure('new', dpi=300)
+	canvas.print_figure('new', dpi=600)

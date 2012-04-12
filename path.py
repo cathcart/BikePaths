@@ -5,6 +5,9 @@ import decoder
 import math
 import time
 import numpy as np
+import collections
+
+LatLng = collections.namedtuple("LatLng", ["lat", "lng"])
 
 def get_station_locations():
 
@@ -24,39 +27,12 @@ def get_station_locations():
 		lng = value.get('lng')
 		name = value.get('name')
 
-		locations[int(n)] = (float(lat), float(lng))
+		locations[int(n)] = LatLng(lat=float(lat), lng=float(lng))
+		#locations[int(n)] = (float(lat), float(lng))
 		#locations[int(n)] = ("%sN%sW" % (lat, lng))
 
 	return locations
 
-def distance(start, end):
-
-	#calculate the distance between two long lat points with the haversine formula
-	lat1, lon1 = start
-	lat2, lon2 = end
-	radius = 6371 # km
-
-	dlat = math.radians(lat2-lat1)
-	dlon = math.radians(lon2-lon1)
-	a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
-	    * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
-	c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-	d = radius * c
-
-	return d*1000
-
-def bearing(start, end):
-
-	#calculate the bearing between two long lat points with the haversine formula
-	lat1, lon1 = start
-	lat2, lon2 = end
-	radius = 6371 # km
-	
-	dlat = math.radians(lat2-lat1)
-	dlon = math.radians(lon2-lon1)
-	
-	return math.atan2(math.sin(dlon) * math.cos(lat2), math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.sin(lat2) * math.cos(dlon))
-	
 class Path(object):
 	
 	def __init__(self, start, end):
@@ -96,10 +72,10 @@ class Path(object):
 		
 			#directions = urllib2.urlopen("http://maps.googleapis.com/maps/api/directions/xml?origin=%s&destination=%s&sensor=false" % (locations[start], locations[end]) ).read()
 			#need to catch this failing
-			directions = urllib2.urlopen("http://maps.googleapis.com/maps/api/directions/xml?origin=%s&destination=%s&sensor=false" % (str(locations[start][0])+"N"+str(abs(locations[start][1]))+"W", str(locations[end][0])+"N"+str(abs(locations[end][1]))+"W" ) ).read()
+			directions = urllib2.urlopen("http://maps.googleapis.com/maps/api/directions/xml?origin=%s&destination=%s&sensor=false" % (str(locations[start].lat)+"N"+str(abs(locations[start].lng))+"W", str(locations[end].lat)+"N"+str(abs(locations[end].lng))+"W" ) ).read()
 			file("paths/path_%d_%d.xml" %(start, end), "w").write(directions)
+			time.sleep(1)	
 
-		time.sleep(1)	
 		return directions
 
 	def __parse_map(self, map_data):
@@ -108,7 +84,7 @@ class Path(object):
 	
 		p = tree.findtext("route/overview_polyline/points")
 
-		points = decoder.decode_line(p)
+		points = [LatLng(lat=x[0], lng=x[1]) for x in decoder.decode_line(p)]
 
 		if self.reverse:
 			self.path_points = [x for x in reversed(points)]
@@ -121,8 +97,8 @@ class Path(object):
 	def __distance(self, start, end):
 
 		#calculate the distance between two long lat points with the haversine formula
-		lat1, lon1 = start
-		lat2, lon2 = end
+		lat1, lon1 = start.lat, start.lng
+		lat2, lon2 = end.lat, end.lng
 		radius = 6371 # km
 	
 		dlat = math.radians(lat2-lat1)
@@ -145,8 +121,10 @@ class Path(object):
 			calc_dis = []
 			calc_dis.append(self.__distance(initial, next))
 			while len(points) > 0:
-				initial = next[:]
+				#initial = next[:]
+				initial = next
 				next = points.pop(0)
+
 				calc_dis.append(self.__distance(initial, next))
 	
 			total_dis = sum(self.distances)
@@ -162,7 +140,8 @@ class Path(object):
 		two = np.array(self.path_points[end])
 		vec = two - one
 
-		return vec*time + one
+		result = vec*time + one
+		return LatLng(lat=result[0], lng=result[1])
 
 	def points_to_here(self, time):
 	
@@ -186,6 +165,7 @@ if __name__ == "__main__":
 	path = Path(start, end)
 	print path.path_points
 
-#	for x in np.arange(0,1.1,0.1):
-#		print path.position(x)
-#	print sorted(path.path_points)
+	for x in np.arange(0,1.1,0.1):
+		print path.position(x)
+		print type(path.position(x))
+	print sorted(path.path_points)
