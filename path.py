@@ -3,6 +3,7 @@ import urllib2
 import os
 import decoder
 import math
+import time
 import numpy as np
 
 def get_station_locations():
@@ -97,7 +98,8 @@ class Path(object):
 			#need to catch this failing
 			directions = urllib2.urlopen("http://maps.googleapis.com/maps/api/directions/xml?origin=%s&destination=%s&sensor=false" % (str(locations[start][0])+"N"+str(abs(locations[start][1]))+"W", str(locations[end][0])+"N"+str(abs(locations[end][1]))+"W" ) ).read()
 			file("paths/path_%d_%d.xml" %(start, end), "w").write(directions)
-		
+
+		time.sleep(1)	
 		return directions
 
 	def __parse_map(self, map_data):
@@ -137,6 +139,7 @@ class Path(object):
 		#calculate what fraction of the total journey each point corresponds to if we haven't already
 		if len(self.fractional_times) == 0:
 			points = self.path_points[:]
+			#print time, len(points), points, self.start, self.end
 			initial = points.pop(0)
 			next = points.pop(0)
 			calc_dis = []
@@ -160,6 +163,18 @@ class Path(object):
 		vec = two - one
 
 		return vec*time + one
+
+	def points_to_here(self, time):
+	
+		#returns a list of points that trace the path up to the fractional time, time
+
+		current_point = self.position(time)
+
+		times = [ x for x in self.fractional_times if x <= time]
+
+		indexes = [times.index(i) for i in times]
+		
+		return [self.path_points[idx] for idx in indexes] + [current_point]
 
 if __name__ == "__main__":
 

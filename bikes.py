@@ -71,7 +71,7 @@ def valid_journey(T, s, pop):
 	st = random.randint(1,T-2)
 	et = random.choice([ x for x in range(1,T) if x > st])
 
-	start = [i for i in range(s) if pop[st][i] > 0]
+	start = [i for i in range(1, s) if pop[st][i] > 0]
 	try:
 		ss = random.choice(start)
 	except:
@@ -81,7 +81,7 @@ def valid_journey(T, s, pop):
 		print start, st, et, pop	
 		exit(1)
 	
-	end = range(s)
+	end = range(1,s)
 	end.remove(ss)	
 	es = random.choice(end)
 

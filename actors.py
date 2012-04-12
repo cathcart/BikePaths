@@ -1,11 +1,16 @@
 import path
+import bikes
 import math
+import random
 try:
+	from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+	from matplotlib.figure import Figure
 	import matplotlib.pyplot as plt
 	IsPlotting = True
 except ImportError:
 	print "No plotting available"
 	IsPlotting = False
+	raise NameError("I'm not going to plot anything for you")
 
 class Actor(path.Path):
 	def __init__(self, journey):
@@ -23,23 +28,6 @@ class Actor(path.Path):
 		else:
 			return None
 	
-def convert_long_lat(value):
-
-	if value == None:
-		return None
-
-	#start = [float(x) for x in value.strip("W").split("N")]	
-	#origin = [53.33080, -6.27527]
-	#origin = [53.33110, -6.28575]
-	origin = [180, 85]
-	#origin = [53.34418, -6.26478]
-	start = value
-
-	theta = path.bearing(origin, start)
-	d = path.distance(origin, start)
-
-	return [d * math.cos(theta), d * math.sin(theta)]
-
 def mercator_projection(value):
 
 	if value == None:
@@ -55,64 +43,60 @@ def mercator_projection(value):
 
 	
 if __name__ == "__main__":
-	x = []
-	y = []
-
-#	#plt.axis([min(x)-1, max(x)+1, min(y)-1, max(y)+1])
-#	#plt.scatter(x, y, 'ro')
-#
-	locations = path.get_station_locations()
 		
-	#mercator test
-	print "should be (-626172.1357121646, 6887893.4928337997)"
-	print mercator_projection((52.4827802220782, -5.625 ))
+	[T, s, m, j] = [200, 44, 100, 190]
+	[real_journies, pop] = bikes.random_pop(T, s, m, j)
+	journies = bikes.pop_to_journies(pop)
 
-	#journey = [2, 5, 25, 26]
-	journey = [2, 5, 1, 2]
-	one = Actor(journey)
-	journey = [4, 9, 26, 25]
-	two = Actor(journey)
-
-	#agents = [one, two]
-	agents = [one]
+	agents = []
+	for j in journies:
+		if j[2] != j[-1]:
+			agents.append(Actor(j))
 	
-	#plt.axis([0, 3.5, 0, 8000])
-	plt.hold(b=True)
+	fig = Figure()
+	canvas = FigureCanvas(fig)
+	ax = fig.add_subplot(111)
+	end = 0.7
 
-	start = (locations[one.start])[:]
-	end = (locations[one.end])[:]
-	print "Path gis: ", start, end
-	print "path ", one.path_points
+	for bike in agents:
+		color = random.choice(["#F1B2E1", "#B1DDF3", "#FFDE89", "#E3675C", "#C2D985"])
+		x0 = []
+		y0 = []
+		#plot weak tail
+		for p in bike.points_to_here(end):
+			[a, b] = mercator_projection(p)[:]
+			x0.append(a)
+			y0.append(b)
+		ax.plot(x0, y0, color, alpha = 0.1, linewidth=4)
 
+		x0 = []
+		y0 = []
+		#plot mid tail
+		temp = [str(x[0])+"&"+str(x[1]) for x in bike.points_to_here(end)]
+		temp2 = [str(x[0])+"&"+str(x[1]) for x in bike.points_to_here(0.5*end)]
+		temp3 = [[float(y) for y in x.split("&")] for x in temp if x not in temp2]
+		for p in temp3:
+			(a, b) = mercator_projection(p)[:]
+			x0.append(a)
+			y0.append(b)
+		ax.plot(x0, y0, color, alpha = 0.3, linewidth=4)
 
-	x0 = []
-	y0 = []
-	for p in one.path_points:
-		[a, b] = mercator_projection(p)[:]
-		x0.append(a)
-		y0.append(b)
-	plt.plot(x0, y0, 'ro')
-	plt.savefig("test.png")
+		x0 = []
+		y0 = []
+		#plot near tail
+		temp = [str(x[0])+"&"+str(x[1]) for x in bike.points_to_here(end)]
+		temp2 = [str(x[0])+"&"+str(x[1]) for x in bike.points_to_here(0.75*end)]
+		temp3 = [[float(y) for y in x.split("&")] for x in temp if x not in temp2]
+		for p in temp3:
+			(a, b) = mercator_projection(p)[:]
+			x0.append(a)
+			y0.append(b)
+		ax.plot(x0, y0, color, alpha = 0.7, linewidth=4)
 
-	x0 = []
-	y0 = []
-	for p in two.path_points:
-		[a, b] = mercator_projection(p)[:]
-		x0.append(a)
-		y0.append(b)
-	#plt.plot(x0, y0, 'bo', alpha = 0.25)
-	plt.plot(x0, y0, 'bo')
-	plt.savefig("test_alt.png")
+		#ax.plot(x0[-1], y0[-1], 'ko')
 
-#	for t in range(11):
-#		x = []
-#		y = []
-#		for person in agents:
-#			result = mercator_projection(person.call(t)) 
-#			if result != None:
-#				[a, b] = result
-#				x.append(a); y.append(b)
-#
-#		plt.plot(x, y, 'bo')
-#		print t, x,y
-#		plt.savefig("test%d.png" % t)
+	ax.set_frame_on(False)
+	ax.set_axis_off()
+	canvas.resize(3510, 2490)
+	canvas.print_figure('new', dpi=300)
+
