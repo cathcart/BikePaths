@@ -34,14 +34,14 @@ class Actor(path.Path):
 		else:
 			return None
 	
-	def plot(self, plt_obj, position):
+	def plot_lines(self, plt_obj, position):
 
 		for cut in np.arange(0,1,0.2):
 			x0 = []
 			y0 = []
 			#plot tail
 			my_alpha = 0.1
-			for p in [x for x in bike.points_to_here(position) if x not in bike.points_to_here(cut*position)]:
+			for p in [x for x in self.points_to_here(position) if x not in self.points_to_here(cut*position)]:
 				[a, b] = mercator_projection(p)[:]
 				x0.append(a)
 				y0.append(b)
@@ -49,8 +49,10 @@ class Actor(path.Path):
 					my_alpha = cut
 			plt_obj.plot(x0, y0, self.color, alpha = my_alpha, linewidth=4)
 
-		#plt_obj.plot(x0[-1], y0[-1], c=self.color, marker="o", markeredgeself.color=self.color)
-		plt_obj.plot(x0[-1], y0[-1], "ko")
+	def plot_points(self, plt_obj, time):
+		[x, y] = mercator_projection(self.position(time))[:]
+		#plt_obj.plot(x, y, c=self.color, marker="o", markeredgeself.color=self.color)
+		plt_obj.plot(x, y, "ko")
 
 
 	
@@ -89,7 +91,9 @@ if __name__ == "__main__":
 	end = 0.7
 
 	for bike in agents:
-		bike.plot(ax, end)
+		bike.plot_lines(ax, end)
+	for bike in agents:
+		bike.plot_points(ax, end)
 	
 	#plot output
 	#canvas.print_figure('new', dpi=300)
