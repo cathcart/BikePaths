@@ -18,7 +18,8 @@ def bikes(temp_al, pop):
 	leave = [x[0] for x in temp_al]#all leaving
 	leave_values = [x[0] for x in temp_al if x[0]]#list of leaving values
 	leave_indexes = []
-	for value in leave_values:
+	#for value in leave_values:
+	for value in random.sample(leave_values, len(leave_values)):
 		i = leave.index(value)
 		leave[i] = 0
 		for x in range(temp_al[i][0]):
@@ -28,7 +29,8 @@ def bikes(temp_al, pop):
 	arrive = [x[1] for x in temp_al]#all leaving
 	arrive_values = [x[1] for x in temp_al if x[1]]#list of indexes for leaving
 	arrive_indexes = []
-	for value in arrive_values:
+	#for value in arrive_values:
+	for value in random.sample(arrive_values, len(arrive_values)):
 		i = arrive.index(value)
 		arrive[i] = 0
 		for x in range(temp_al[i][1]):
@@ -45,8 +47,10 @@ def bikes(temp_al, pop):
 		delta_l = np.array(pop[l]) - np.array(pop[l-1])
 		delta_a = np.array(pop[a]) - np.array(pop[a-1])
 
-		ss = map(bool, delta_l).index(True)
-		es = map(bool, delta_a).index(True)
+#		ss = map(bool, delta_l).index(True)
+#		es = map(bool, delta_a).index(True)
+		ss = random.choice([x for x in range(len(pop[0])) if bool(delta_l[x])])
+		es = random.choice([x for x in range(len(pop[0])) if bool(delta_a[x])])
 	
 		pop[l-1][ss] -= 1	
 		#pop[a][es] -= 1	
@@ -204,23 +208,69 @@ def multi_trial():
 			print time, station, count[0], count[1], count[2]
 
 def pop_to_journies(pop):
+
 	al = total_arrive_leave(pop)
-	checks(al)
+	#checks(al)
 	return bikes(al, pop)
+
+def pop_correct(pop):
+	missing_bikes = sum(n_pop[0]) - sum(n_pop[-1])
+	if missing_bikes < 0:
+		raise NameError("Stating point not early enough. Either add %d bikes to starting popution or add additional time steps" % abs(missing_bikes))
+	for bike in range(missing_bikes):
+		station = random.randint(0, len(pop[0]))
+		pop[-1][station] += 1
+	return pop
+
+def load_data(file_in):
+
+	pop = {}
+	for line in open(file_in).read().strip().split("\n"):
+		items = line.strip().split(" ")
+		try:
+			pop[float(items[0])] = [int(x) for x in items[1:]]
+		except IndexError:
+			print line
+			print items
+			print len(items)
+			raise IndexError
+		except ValueError:
+			print line
+			print items[0]
+			raise ValueError
+
+	return pop
 	
 if __name__ == "__main__":
 
-#				multi_trial()
-				[T, s, m, j] = [6, 3, 10, 4]
-				[real_journies, pop] = random_pop(T, s, m, j)	
-			
-				al = total_arrive_leave(pop)
-				checks(al)
-				#print "al", al
-				journies = bikes(al, pop)
-				results = report(journies, real_journies, pop)
-				print sorted(real_journies)
-				print sorted(journies)
-				print "al", al
-				print pop
+	pop = load_data("feb8good.dat")
+	#print pop
+	n_pop = pop.values()[:]
+	print sum(n_pop[0])
+	print sum(n_pop[-1])
+	correct_pop = pop_correct(n_pop)
+	print sum(correct_pop[0])
+	print sum(correct_pop[-1])
+	journies = pop_to_journies(n_pop)
+	print journies
+	out = open("journies.dat", "w")
+	for time in journies:
+		for station in time:
+			out.write("%d "% station)
+		out.write("\n")
+	out.close()
 
+##				multi_trial()
+#				[T, s, m, j] = [6, 3, 10, 4]
+#				[real_journies, pop] = random_pop(T, s, m, j)	
+#			
+#				al = total_arrive_leave(pop)
+#				checks(al)
+#				#print "al", al
+#				journies = bikes(al, pop)
+#				results = report(journies, real_journies, pop)
+#				print sorted(real_journies)
+#				print sorted(journies)
+#				print "al", al
+#				print pop
+#
