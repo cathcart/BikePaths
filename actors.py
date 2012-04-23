@@ -11,12 +11,7 @@ try:
 	import matplotlib.pyplot as plt
 	IsPlotting = True
 except ImportError:
-	print "No plotting available"
-	IsPlotting = False
-	raise NameError("I'm not going to plot anything for you")
-
-palette = ["#F1B2E1", "#B1DDF3", "#FFDE89", "#E3675C", "#C2D985"]		
-#palette = ["#556270", "#4ECDC4", "#C7F464", "#FF6B6B", "#C44D58"]
+	#raise NameError("I'm not going to plot anything for you")
 
 def set_random_palette():
 
@@ -79,8 +74,33 @@ class Actor(path.Path):
 		plt_obj.plot(x, y, c=self.color, marker="o", markeredgecolor=self.color)
 		#plt_obj.plot(x, y, "ko")
 
+def kmeans(data, n):
+	#note: this only works with points that are 2D tuples. annoying but simple
+	#data is the list of data points to be split
+	# n is the number of splits
 
+	mean_points = []
+	for i in range(n):
+		x = random.uniform(min(data)[0], max(data)[0])
+		y = random.uniform(min(data)[1], max(data)[1])
+
+		mean_points.append((x, y))
+
+	for i in range(10):
+		split_points = [[] for x in mean_points]
 	
+		for point in data:
+			distances = [distance(point, x) for x in mean_points]
+		#	print splits[splits.keys()[distances.index(min(distances))]]
+			split_points[distances.index(min(distances))].append(point)
+			#splits[splits.keys()[distances.index(min(distances))]].append(point)
+	
+		for v in range(n):
+			mean_points[v] = tuple([(1.0/len(split_points[v]))*t for t in reduce(lambda x,y: (x[0]+y[0], x[1]+y[1]), split_points[v])])
+		
+		print "#here", i, mean_points
+	return dict(zip(mean_points, split_points))
+
 def mercator_projection(value):
 
 	if value == None:
@@ -96,6 +116,9 @@ def mercator_projection(value):
 
 	
 if __name__ == "__main__":
+
+palette = ["#F1B2E1", "#B1DDF3", "#FFDE89", "#E3675C", "#C2D985"]		
+#palette = ["#556270", "#4ECDC4", "#C7F464", "#FF6B6B", "#C44D58"]
 
 #	fig = Figure()
 #	canvas = FigureCanvas(fig)
