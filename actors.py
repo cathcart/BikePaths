@@ -15,8 +15,8 @@ except ImportError:
 	IsPlotting = False
 	raise NameError("I'm not going to plot anything for you")
 
-#palette = ["#F1B2E1", "#B1DDF3", "#FFDE89", "#E3675C", "#C2D985"]		
-palette = ["#556270", "#4ECDC4", "#C7F464", "#FF6B6B", "#C44D58"]
+palette = ["#F1B2E1", "#B1DDF3", "#FFDE89", "#E3675C", "#C2D985"]		
+#palette = ["#556270", "#4ECDC4", "#C7F464", "#FF6B6B", "#C44D58"]
 
 def set_random_palette():
 
@@ -35,29 +35,38 @@ class Actor(path.Path):
 	def __init__(self, journey):
 		self.start_time = journey[0]
 		self.end_time = journey[1]
-		self.time_delta = self.end_time - self.start_time -1
+		#self.time_delta = self.end_time - self.start_time -1
+		self.time_delta = self.end_time - self.start_time 
 
 		super(Actor, self).__init__(journey[2], journey[3])
 
 		#self.color = palette[self.start_time%len(palette)]#time
 		self.color = palette[self.start%len(palette)]#start_station
 
-	def call(self, time):
+	def call(self, plt_obj, time):
 		if time >= self.start_time and time < self.end_time:
 			run_time = time - self.start_time
-			time_fraction = run_time/self.time_delta
-			return super(Actor, self).position(time_fraction)
+			try:
+				time_fraction = float(run_time)/self.time_delta
+			except ZeroDivisionError:
+				print time, self.start_time, self.end_time
+				print self.time_delta
+				os.exit()
+			#return super(Actor, self).position(time_fraction)
+			self.plot_lines(plt_obj, time_fraction)
+			self.plot_points(plt_obj, time_fraction)
 		else:
 			return None
 	
-	def plot_lines(self, plt_obj, position):
+	def plot_lines(self, plt_obj, time):
 
-		for cut in np.arange(0,1,0.05):
+		#for cut in np.arange(0,1,0.05):
+		for cut in np.arange(0.5,1.2,0.5):
 			x0 = []
 			y0 = []
 			#plot tail
-			my_alpha = 0.1
-			for p in [x for x in self.points_to_here(position) if x not in self.points_to_here(cut*position)]:
+			my_alpha = 0.2
+			for p in [x for x in self.points_to_here(time) if x not in self.points_to_here(cut*time)]:
 				[a, b] = mercator_projection(p)[:]
 				x0.append(a)
 				y0.append(b)
@@ -88,9 +97,25 @@ def mercator_projection(value):
 	
 if __name__ == "__main__":
 
-	palette = set_random_palette()
+#	fig = Figure()
+#	canvas = FigureCanvas(fig)
+#	ax = fig.add_subplot(111)
+#	#ax.set_frame_on(False)
+#	#ax.set_axis_off()
+#	canvas.resize(3510, 2490)
+#
+#	x=[];y=[]
+#	[[x.append(t[0]), y.append(t[1])] for t in [mercator_projection(z) for z in path.get_station_locations().values()]]
+#	ax.plot(x, y, "ko")
+#
+#	#plot output
+#	canvas.print_figure('stations', dpi=300)
+
+
+	#palette = set_random_palette()
 		
 	[T, s, m, j] = [200, 44, 100, 190]
+	#[T, s, m, j] = [10, 44, 100, 1]
 	[real_journies, pop] = bikes.random_pop(T, s, m, j)
 	journies = bikes.pop_to_journies(pop)
 
@@ -99,20 +124,41 @@ if __name__ == "__main__":
 		if j[2] != j[-1]:
 			agents.append(Actor(j))
 
-	#setup plot object	
-	fig = Figure()
-	canvas = FigureCanvas(fig)
-	ax = fig.add_subplot(111)
-	ax.set_frame_on(False)
-	ax.set_axis_off()
-	canvas.resize(3510, 2490)
-	end = 0.7
+#	#setup plot object	
+#	fig = Figure()
+#	canvas = FigureCanvas(fig)
+#	ax = fig.add_subplot(111)
+#	ax.set_frame_on(False)
+#	ax.set_axis_off()
+#	canvas.resize(3510, 2490)
+#	end = 0.7
+#
+#	for bike in agents:
+#		end = random.random()
+#		bike.plot_lines(ax, end)
+#		bike.plot_points(ax, end)
+#	
+#	#plot output
+#	#canvas.print_figure('new', dpi=300)
+#	canvas.print_figure('new', dpi=600)
 
-	for bike in agents:
-		end = random.random()
-		bike.plot_lines(ax, end)
-		bike.plot_points(ax, end)
+	total_time = len(pop)	
+	for t in range(total_time + 36):
+		#setup plot object	
+		fig = Figure()
+		canvas = FigureCanvas(fig)
+		ax = fig.add_subplot(111)
+		ax.set_frame_on(False)
+		ax.set_axis_off()
+		ax.axis([-700000, -694000, 7.044*pow(10,6), 6000 + 7.044*pow(10,6)])
+		ax.set_autoscale_on(False)
+		canvas.resize(3510, 2490)
 	
-	#plot output
-	#canvas.print_figure('new', dpi=300)
-	canvas.print_figure('new', dpi=600)
+		for bike in agents:
+			bike.call(ax, t)
+#			bike.plot_lines(ax, float(t)/total_time)
+#			bike.plot_points(ax, float(t)/total_time)
+
+		#plot output
+		#canvas.print_figure('new', dpi=300)
+		canvas.print_figure('new_%03d'%t)
