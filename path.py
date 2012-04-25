@@ -70,7 +70,6 @@ class Path(object):
 		else:
 			print "file doesn't exist. download from google"
 		
-			#directions = urllib2.urlopen("http://maps.googleapis.com/maps/api/directions/xml?origin=%s&destination=%s&sensor=false" % (locations[start], locations[end]) ).read()
 			#need to catch this failing
 			directions = urllib2.urlopen("http://maps.googleapis.com/maps/api/directions/xml?origin=%s&destination=%s&sensor=false" % (str(locations[start].lat)+"N"+str(abs(locations[start].lng))+"W", str(locations[end].lat)+"N"+str(abs(locations[end].lng))+"W" ) ).read()
 			file("paths/path_%d_%d.xml" %(start, end), "w").write(directions)
