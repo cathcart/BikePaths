@@ -11,7 +11,8 @@ try:
 	import matplotlib.pyplot as plt
 	IsPlotting = True
 except ImportError:
-	raise NameError("I'm not going to plot anything for you")
+	pass
+	#raise NameError("I'm not going to plot anything for you")
 
 def set_random_palette():
 
@@ -113,16 +114,12 @@ def kmeans(data, n):
 	
 		for point in data:
 			distances = [distance(point, x) for x in mean_points]
-			print distances	
 			split_points[distances.index(min(distances))].append(point)
 
 
-		print [len(x) for x in split_points]	
 		for v in range(n):
-			print split_points[v]
 			mean_points[v] = tuple([(1.0/len(split_points[v]))*t for t in reduce(lambda x,y: (x[0]+y[0], x[1]+y[1]), split_points[v])])
 		
-		print "#here", i, mean_points
 	return dict(zip(mean_points, split_points))
 
 def mercator_projection(value):
@@ -183,12 +180,10 @@ if __name__ == "__main__":
 
 	for bike in agents:
 		print "new", agents.index(bike)
-		bike_dict = {}
-		for t in np.arange(0.1,1.1,0.1):
-			a = bike.position(t - 0.1) 
-			b = bike.position(t)
-			bike_dict[t] = bike.Distance(a,b)
-		print bike_dict
+		#positions = [[mercator_projection(c) for c in bike.points_to_here(t)] for t in np.arange(0,1.1,0.1)]
+		positions = [bike.points_to_here(t) for t in np.arange(0,1.1,0.1)]
+		print len(positions), positions
+		print map(lambda x,y: bike.Distance(x, y), positions[:-1], positions[1:])
 
 	os.exit()
 	total_time = len(pop)	
