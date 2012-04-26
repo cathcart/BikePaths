@@ -5,6 +5,8 @@ import random
 import numpy as np
 import xml.etree.cElementTree as etree
 import urllib2
+import pickle
+import os
 try:
 	from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 	from matplotlib.figure import Figure
@@ -135,6 +137,18 @@ def mercator_projection(value):
 
 	return (x, y)
 
+
+def pickle_write(object):
+	output = open('journies.pkl', 'wb')
+	# Pickle the list using the highest protocol available.
+	pickle.dump(object, output, -1)
+	output.close()
+
+def pickle_read():
+	pkl_file = open('journies.pkl', 'rb')
+	object = pickle.load(pkl_file)
+	pkl_file.close()
+	return object
 	
 if __name__ == "__main__":
 
@@ -170,21 +184,39 @@ if __name__ == "__main__":
 		
 	[T, s, m, j] = [200, 44, 100, 190]
 	#[T, s, m, j] = [10, 44, 100, 1]
-	[real_journies, pop] = bikes.random_pop(T, s, m, j)
-	journies = bikes.pop_to_journies(pop)
+	#[real_journies, pop] = bikes.random_pop(T, s, m, j)
+	#journies = bikes.pop_to_journies(pop)
+
+	#pickle_write(journies)
+	journies =pickle_read()
 
 	agents = []
 	for j in journies:
 		if j[2] != j[-1]:
 			agents.append(Actor(j))
 
+	out = open("problems.dat", "a")
+
 	for bike in agents:
 		print "new", agents.index(bike)
-		#positions = [[mercator_projection(c) for c in bike.points_to_here(t)] for t in np.arange(0,1.1,0.1)]
 		positions = [bike.points_to_here(t) for t in np.arange(0,1.1,0.1)]
-		print len(positions), positions
-		print map(lambda x,y: bike.Distance(x, y), positions[:-1], positions[1:])
-
+		distance_travelled = []
+		for time_list in positions:
+			distance_travelled.append(sum(map(lambda x,y: bike.Distance(x, y), time_list[:-1], time_list[1:])))
+		truths = map(lambda x,y:  x<y  ,distance_travelled[:-1], distance_travelled[1:])
+		no_stutter = all(truths)
+		print no_stutter
+		if not no_stutter:
+			print "STUTTER ON %d-%d at %f"%(bike.start, bike.end, float(truths.index(False))*0.1)
+			print distance_travelled
+			bike.color = "#ffffff"
+			#for point in [mercator_projection(bike.points_to_here(t)) for t in np.arange(0,1.01,0.01)]:
+			#for t in np.arange(0,1.1,0.1):
+			for point in [mercator_projection(v) for v in bike.points_to_here(1)]:
+				out.write("%f %f\n"%(point[0], point[1]))
+			#	out.write("\n\n")
+			out.write("\n\n")
+	out.close()
 	os.exit()
 	total_time = len(pop)	
 	for t in range(total_time):
