@@ -207,8 +207,10 @@ if __name__ == "__main__":
 		no_stutter = all(truths)
 		print no_stutter
 		if not no_stutter:
-			print "STUTTER ON %d-%d at %f"%(bike.start, bike.end, float(truths.index(False))*0.1)
-			print distance_travelled
+			print "STUTTER ON %d-%d at %f with bike %d"%(bike.start, bike.end, float(truths.index(False))*0.1, agents.index(bike))
+			print sum(distance_travelled)
+			time_list = bike.points_to_here(1)
+			print sum(map(lambda x,y: bike.Distance(x, y), time_list[:-1], time_list[1:]))
 			bike.color = "#ffffff"
 			#for point in [mercator_projection(bike.points_to_here(t)) for t in np.arange(0,1.01,0.01)]:
 			#for t in np.arange(0,1.1,0.1):
@@ -216,6 +218,14 @@ if __name__ == "__main__":
 				out.write("%f %f\n"%(point[0], point[1]))
 			#	out.write("\n\n")
 			out.write("\n\n")
+	out.close()
+
+	out = open("test.dat", "w")
+	b = agents[167]
+	for t in np.arange(0,1.1,0.1):
+		point = mercator_projection(b.position(t))
+		out.write("%f %f\n"%(point[0], point[1]))
+
 	out.close()
 	os.exit()
 	total_time = len(pop)	
