@@ -40,7 +40,7 @@ class Actor(path.Path):
 
 		#self.color = palette[self.start_time%len(palette)]#time
 		#self.color = palette[self.start%len(palette)]#start_station
-		self.color = new_palette[self.start -1]
+		#self.color = new_palette[self.start -1]
 
 	def Distance(self, start, end):
 
@@ -59,8 +59,9 @@ class Actor(path.Path):
 		return d*1000
 
 
-	def call(self, plt_obj, time):
+	def call(self, plt_obj, time, palette):
 		if time >= self.start_time and time < self.end_time:
+			color = palette[(self.start, time)]
 			run_time = time - self.start_time
 			try:
 				time_fraction = float(run_time)/self.time_delta
@@ -69,12 +70,12 @@ class Actor(path.Path):
 				print self.time_delta
 				os.exit()
 			#return super(Actor, self).position(time_fraction)
-			self.plot_lines(plt_obj, time_fraction)
-			self.plot_points(plt_obj, time_fraction)
+			self.plot_lines(plt_obj, time_fraction, color)
+			self.plot_points(plt_obj, time_fraction, color)
 		else:
 			return None
 	
-	def plot_lines(self, plt_obj, time):
+	def plot_lines(self, plt_obj, time, color):
 
 		#for cut in np.arange(0,1,0.05):
 		for cut in np.arange(0.5,1.2,0.5):
@@ -88,41 +89,12 @@ class Actor(path.Path):
 				y0.append(b)
 				if cut != 0:
 					my_alpha = cut
-			plt_obj.plot(x0, y0, self.color, alpha = my_alpha, linewidth=4)
+			plt_obj.plot(x0, y0, color, alpha = my_alpha, linewidth=4)
 
-	def plot_points(self, plt_obj, time):
+	def plot_points(self, plt_obj, time, color):
 		[x, y] = mercator_projection(self.position(time))[:]
-		plt_obj.plot(x, y, c=self.color, marker="o", markeredgecolor=self.color)
+		plt_obj.plot(x, y, c=color, marker="o", markeredgecolor=color)
 		#plt_obj.plot(x, y, "ko")
-
-def distance(a, b):
-        return math.sqrt(pow(a[0]-b[0],2) + pow(a[1]-b[1],2))
-
-def kmeans(data, n):
-	#note: this only works with points that are 2D tuples. annoying but simple
-	#data is the list of data points to be split
-	# n is the number of splits
-
-	mean_points = []#[random.choice(data) for x in range(n)]
-	for i in range(n):
-		x = random.uniform(min(data)[0], max(data)[0])
-		y = random.uniform(min(data)[1], max(data)[1])
-
-		mean_points.append((x, y))
-
-
-	for i in range(10):
-		split_points = [[] for x in mean_points]
-	
-		for point in data:
-			distances = [distance(point, x) for x in mean_points]
-			split_points[distances.index(min(distances))].append(point)
-
-
-		for v in range(n):
-			mean_points[v] = tuple([(1.0/len(split_points[v]))*t for t in reduce(lambda x,y: (x[0]+y[0], x[1]+y[1]), split_points[v])])
-		
-	return dict(zip(mean_points, split_points))
 
 def mercator_projection(value):
 
@@ -137,97 +109,114 @@ def mercator_projection(value):
 
 	return (x, y)
 
+class Palette(object):
+	def __init__(self, default_palette):
+		self.default = default_palette
+		self.__setup()
 
-def pickle_write(object):
-	output = open('journies.pkl', 'wb')
-	# Pickle the list using the highest protocol available.
-	pickle.dump(object, output, -1)
-	output.close()
+	def __setup(self):
+	        lat_lng_locations = path.get_station_locations().values()
+	        locations = [mercator_projection(v) for v in lat_lng_locations]
+	
+		splits = self.__kmeans(locations,len(palette))
+	
+		self.palette = {}
+		for v in range(len(self.default)):
+			for x in splits.values()[v]:
+				self.palette[(locations.index(x), 0)] = self.default[v]
 
-def pickle_read():
-	pkl_file = open('journies.pkl', 'rb')
-	object = pickle.load(pkl_file)
-	pkl_file.close()
-	return object
+	def __getitem__(self, key):
+
+		station, time = key
+		time = int(time)
+		try:
+			color = self.palette[(station, time)]
+		except KeyError:
+			#raise NameError("time error")
+			color = self.__getitem__((station, time-1))
+			
+		return color
+
+	def mix(self, journey):
+		st, et, ss, es = journey
+		color1 = self.__getitem__((es,et))
+		color2 = self.__getitem__((ss,st))
+		new_color = self.__color_mix(color1, color2, pop[et][es])#weight is simply the number of bikes in the es at et
+		self.palette[(es, et)] = new_color
+
+	def __color_mix(self, color1, color2, weight):
+
+		if weight < 0:
+			weight = 0
+		#average of color1*weight and color2
+		r1, g1, b1 = color1[1:3], color1[3:5], color1[5:]
+		r2, g2, b2 = color2[1:3], color2[3:5], color2[5:]
+
+		nr = (1.0/(weight+1))*(weight*int(r1, 16) + int(r2, 16))
+		ng = (1.0/(weight+1))*(weight*int(g1, 16) + int(g2, 16))
+		nb = (1.0/(weight+1))*(weight*int(b1, 16) + int(b2, 16))
+
+		return "#" + hex(int(nr))[2:] + hex(int(ng))[2:] + hex(int(nb))[2:]
+	
+	def __kmeans(self, data, n):
+		#note: this only works with points that are 2D tuples. annoying but simple
+		#data is the list of data points to be split
+		# n is the number of splits
+	
+		def distance(a, b):
+	        	return math.sqrt(pow(a[0]-b[0],2) + pow(a[1]-b[1],2))
+	
+		mean_points = []#[random.choice(data) for x in range(n)]
+		for i in range(n):
+			x = random.uniform(min(data)[0], max(data)[0])
+			y = random.uniform(min(data)[1], max(data)[1])
+	
+			mean_points.append((x, y))
+	
+	
+		for i in range(10):
+			split_points = [[] for x in mean_points]
+		
+			for point in data:
+				distances = [distance(point, x) for x in mean_points]
+				split_points[distances.index(min(distances))].append(point)
+	
+	
+			for v in range(n):
+				mean_points[v] = tuple([(1.0/len(split_points[v]))*t for t in reduce(lambda x,y: (x[0]+y[0], x[1]+y[1]), split_points[v])])
+			
+		return dict(zip(mean_points, split_points))
 	
 if __name__ == "__main__":
 
+		
+	[T, s, m, j] = [1000, 44, 10, 900]
+	#[T, s, m, j] = [10, 44, 100, 1]
+	[real_journies, pop] = bikes.random_pop(T, s, m, j)
+	journies = bikes.pop_to_journies(pop)
+
+	#set palette
 	palette = ["#F1B2E1", "#B1DDF3", "#FFDE89", "#E3675C", "#C2D985"]		
 	#palette = ["#556270", "#4ECDC4", "#C7F464", "#FF6B6B", "#C44D58"]
 
-        lat_lng_locations = path.get_station_locations().values()
+	new_palette = Palette(palette)
+	#palette = set_random_palette()
+
+	#sort journies by arrival time
+	for journey in sorted(journies, key=lambda x: x[1]):
+		new_palette.mix(journey)
+
+	#get locations
+      	lat_lng_locations = path.get_station_locations().values()
         locations = [mercator_projection(v) for v in lat_lng_locations]
 
-	splits = kmeans(locations,len(palette))
+	
+	#setup_bike_agents
+        agents = []
+        for j in journies:
+                if j[2] != j[-1]:
+                        agents.append(Actor(j))
 
-	new_palette = {}
-	for v in range(len(palette)):
-		for x in splits.values()[v]:
-			new_palette[locations.index(x)] = palette[v]
-
-#	fig = Figure()
-#	canvas = FigureCanvas(fig)
-#	ax = fig.add_subplot(111)
-#	#ax.set_frame_on(False)
-#	#ax.set_axis_off()
-#	canvas.resize(3510, 2490)
-#
-#	x=[];y=[]
-#	[[x.append(t[0]), y.append(t[1])] for t in [mercator_projection(z) for z in path.get_station_locations().values()]]
-#	ax.plot(x, y, "ko")
-#
-#	#plot output
-#	canvas.print_figure('stations', dpi=300)
-
-
-	#palette = set_random_palette()
-		
-	[T, s, m, j] = [200, 44, 100, 190]
-	#[T, s, m, j] = [10, 44, 100, 1]
-	#[real_journies, pop] = bikes.random_pop(T, s, m, j)
-	#journies = bikes.pop_to_journies(pop)
-
-	#pickle_write(journies)
-	journies =pickle_read()
-
-	agents = []
-	for j in journies:
-		if j[2] != j[-1]:
-			agents.append(Actor(j))
-
-	out = open("problems.dat", "a")
-
-	for bike in agents:
-		print "new", agents.index(bike)
-		positions = [bike.points_to_here(t) for t in np.arange(0,1.1,0.1)]
-		distance_travelled = []
-		for time_list in positions:
-			distance_travelled.append(sum(map(lambda x,y: bike.Distance(x, y), time_list[:-1], time_list[1:])))
-		truths = map(lambda x,y:  x<y  ,distance_travelled[:-1], distance_travelled[1:])
-		no_stutter = all(truths)
-		print no_stutter
-		if not no_stutter:
-			print "STUTTER ON %d-%d at %f with bike %d"%(bike.start, bike.end, float(truths.index(False))*0.1, agents.index(bike))
-			print sum(distance_travelled)
-			time_list = bike.points_to_here(1)
-			print sum(map(lambda x,y: bike.Distance(x, y), time_list[:-1], time_list[1:]))
-			bike.color = "#ffffff"
-			#for point in [mercator_projection(bike.points_to_here(t)) for t in np.arange(0,1.01,0.01)]:
-			#for t in np.arange(0,1.1,0.1):
-			for point in [mercator_projection(v) for v in bike.points_to_here(1)]:
-				out.write("%f %f\n"%(point[0], point[1]))
-			#	out.write("\n\n")
-			out.write("\n\n")
-	out.close()
-
-	out = open("test.dat", "w")
-	b = agents[167]
-	for t in np.arange(0,1.1,0.1):
-		point = mercator_projection(b.position(t))
-		out.write("%f %f\n"%(point[0], point[1]))
-
-	out.close()
-	os.exit()
 	total_time = len(pop)	
 	for t in range(total_time):
 		#setup plot object	
@@ -241,12 +230,12 @@ if __name__ == "__main__":
 		canvas.resize(3510, 2490)
 	
 		for bike in agents:
-			bike.call(ax, t)
+			bike.call(ax, t, new_palette)
 
 		#plot output
 		for pos in locations:
-			colour = new_palette[locations.index(pos)]
-			#ax.text(pos[0], pos[1], locations.index(pos))
-			ax.plot(pos[0], pos[1], c=colour, marker="o", markeredgecolor="k")
+			colour = new_palette[(locations.index(pos), t)]
+			#ax.plot(pos[0], pos[1], c=colour, marker="o", markeredgecolor="k", markersize=10.0)
+			ax.plot(pos[0], pos[1], c=colour, marker="o", markeredgecolor=colour, markersize=8.0)
 		canvas.print_figure('new_%03d'%t)
 #	canvas.print_figure('new', dpi=600)
