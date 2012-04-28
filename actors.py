@@ -9,7 +9,6 @@ try:
 	from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 	from matplotlib.figure import Figure
 	import matplotlib.pyplot as plt
-	IsPlotting = True
 except ImportError:
 	pass
 	#raise NameError("I'm not going to plot anything for you")
@@ -25,23 +24,6 @@ class Actor(path.Path):
 
 		self.colour = palette[self.start -1]
 
-	def Distance(self, start, end):
-
-		#calculate the distance between two long lat points with the haversine formula
-		lat1, lon1 = start.lat, start.lng
-		lat2, lon2 = end.lat, end.lng
-		radius = 6371 # km
-	
-		dlat = math.radians(lat2-lat1)
-		dlon = math.radians(lon2-lon1)
-		a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
-		    * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
-		c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-		d = radius * c
-	
-		return d*1000
-
-
 	def call(self, plt_obj, time):
 		if time >= self.start_time and time < self.end_time:
 			run_time = time - self.start_time
@@ -51,7 +33,6 @@ class Actor(path.Path):
 				print time, self.start_time, self.end_time
 				print self.time_delta
 				os.exit()
-			#return super(Actor, self).position(time_fraction)
 			self.plot_lines(plt_obj, time_fraction)
 			self.plot_points(plt_obj, time_fraction)
 		else:
@@ -60,17 +41,18 @@ class Actor(path.Path):
 	def plot_lines(self, plt_obj, time):
 
 		#for cut in np.arange(0,1,0.05):
-		for cut in np.arange(0.5,1.2,0.5):
+		#for cut in np.arange(0.5,1.2,0.5):
+		for cut in [max(time-0.1, 0)]:
 			x0 = []
 			y0 = []
 			#plot tail
-			my_alpha = 0.2
+			my_alpha = 0.5
 			for p in [x for x in self.points_to_here(time) if x not in self.points_to_here(cut*time)]:
 				[a, b] = mercator_projection(p)[:]
 				x0.append(a)
 				y0.append(b)
-				if cut != 0:
-					my_alpha = cut
+#				if cut != 0:
+#					my_alpha = cut
 			plt_obj.plot(x0, y0, self.colour, alpha = my_alpha, linewidth=4)
 
 	def plot_points(self, plt_obj, time):
@@ -179,7 +161,7 @@ if __name__ == "__main__":
                         agents.append(Actor(j, new_palette))
 
 	total_time = len(pop)	
-	for t in range(total_time):
+	for t in np.arange(0,total_time,0.05):
 		#setup plot object	
 		fig = Figure()
 		canvas = FigureCanvas(fig)
@@ -196,6 +178,5 @@ if __name__ == "__main__":
 		#plot output
 		for pos in locations:
 			colour = new_palette[locations.index(pos)]
-			ax.plot(pos[0], pos[1], c=colour, marker="o", markeredgecolor=colour, markersize=8.0)
-		canvas.print_figure('new_%03d'%t)
-#	canvas.print_figure('new', dpi=600)
+			ax.plot(pos[0], pos[1], alpha=0.5, c=colour, marker="o", markeredgecolor=colour, markersize=8.0)
+		canvas.print_figure('new_%05d'%int(100*t), dpi=600)

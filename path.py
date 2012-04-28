@@ -23,13 +23,10 @@ def get_station_locations():
 	for value in tree.getiterator(tag='marker'): 
 		n = value.get('number')
 		lat = value.get('lat')
-		#lng = str(abs(float(value.get('lng'))))
 		lng = value.get('lng')
 		name = value.get('name')
 
 		locations[int(n)] = LatLng(lat=float(lat), lng=float(lng))
-		#locations[int(n)] = (float(lat), float(lng))
-		#locations[int(n)] = ("%sN%sW" % (lat, lng))
 
 	return locations
 
@@ -98,7 +95,8 @@ class Path(object):
 		#calculate the distance between two long lat points with the haversine formula
 		lat1, lon1 = start.lat, start.lng
 		lat2, lon2 = end.lat, end.lng
-		radius = 6371 # km
+		#radius = 6371 # km
+		radius =  6378137 # m	epsg:3857 std
 	
 		dlat = math.radians(lat2-lat1)
 		dlon = math.radians(lon2-lon1)
@@ -106,15 +104,15 @@ class Path(object):
 		    * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
 		c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
 		d = radius * c
-	
-		return d*1000
+
+		return d	
+		#return d*1000
 
 	def position(self, time):
 
 		#calculate what fraction of the total journey each point corresponds to if we haven't already
 		if len(self.fractional_times) == 0:
 			points = self.path_points[:]
-			#print time, len(points), points, self.start, self.end
 			initial = points.pop(0)
 			next = points.pop(0)
 			calc_dis = []
@@ -132,7 +130,7 @@ class Path(object):
 		#find out between which two points the time corresponds to
 		something = map(lambda x: abs(x-time), self.fractional_times)
 		nearest = sorted(something)[0:2]
-		[start, end] = [something.index(x) for x in nearest]
+		[start, end] = sorted([something.index(x) for x in nearest])
 
 		#create a vector
 		one = np.array(self.path_points[start])
