@@ -82,7 +82,7 @@ class Palette(object):
 	        lat_lng_locations = path.get_station_locations().values()
 	        locations = [mercator_projection(v) for v in lat_lng_locations]
 	
-		splits = self.__kmeans(locations,len(palette))
+		splits = self.__kmeans(locations,len(self.default))
 	
 		self.palette = {}
 		for v in range(len(self.default)):
@@ -135,7 +135,17 @@ class Palette(object):
 				mean_points[v] = tuple([(1.0/len(split_points[v]))*t for t in reduce(lambda x,y: (x[0]+y[0], x[1]+y[1]), split_points[v])])
 			
 		return dict(zip(mean_points, split_points))
+
+def plot_stations(new_palette, plt_obj):
 	
+	#get locations
+      	lat_lng_locations = path.get_station_locations().values()
+        locations = [mercator_projection(v) for v in lat_lng_locations]
+	
+	for pos in locations:
+		colour = new_palette[locations.index(pos)]
+		plt_obj.plot(pos[0], pos[1], alpha=0.5, c=colour, marker="o", markeredgecolor=colour, markersize=8.0)
+		
 if __name__ == "__main__":
 
 		
@@ -150,9 +160,6 @@ if __name__ == "__main__":
 
 	new_palette = Palette(palette)
 
-	#get locations
-      	lat_lng_locations = path.get_station_locations().values()
-        locations = [mercator_projection(v) for v in lat_lng_locations]
 
 	#setup_bike_agents
         agents = []
@@ -175,8 +182,7 @@ if __name__ == "__main__":
 		for bike in agents:
 			bike.call(ax, t)
 
+		plot_stations(new_palette, ax)
+
 		#plot output
-		for pos in locations:
-			colour = new_palette[locations.index(pos)]
-			ax.plot(pos[0], pos[1], alpha=0.5, c=colour, marker="o", markeredgecolor=colour, markersize=8.0)
 		canvas.print_figure('new_%05d'%int(100*t), dpi=600)
