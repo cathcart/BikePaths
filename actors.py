@@ -115,12 +115,12 @@ class Palette(object):
 		def distance(a, b):
 	        	return math.sqrt(pow(a[0]-b[0],2) + pow(a[1]-b[1],2))
 	
-		mean_points = []#[random.choice(data) for x in range(n)]
-		for i in range(n):
-			x = random.uniform(min(data)[0], max(data)[0])
-			y = random.uniform(min(data)[1], max(data)[1])
-	
-			mean_points.append((x, y))
+		mean_points = [random.choice(data) for x in range(n)]
+#		for i in range(n):
+#			x = random.uniform(min(data)[0], max(data)[0])
+#			y = random.uniform(min(data)[1], max(data)[1])
+#	
+#			mean_points.append((x, y))
 	
 	
 		for i in range(10):
