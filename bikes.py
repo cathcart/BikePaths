@@ -218,8 +218,13 @@ def pop_correct(pop):
 	if missing_bikes < 0:
 		raise NameError("Stating point not early enough. Either add %d bikes to starting popution or add additional time steps" % abs(missing_bikes))
 	for bike in range(missing_bikes):
-		station = random.randint(0, len(pop[0]))
-		pop[-1][station] += 1
+		station = random.randint(0, len(pop[0]) -1)
+		try:
+			pop[-1][station] += 1
+		except IndexError:
+			print station
+			print len(pop[0])
+			raise Error
 	return pop
 
 def load_data(file_in):
