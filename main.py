@@ -37,9 +37,11 @@ if __name__ == "__main__":
 
 
 
-	[T, s, m, j] = [100, 44, 10, 90]
-	[real_journies, pop] = bikes.random_pop(T, s, m, j)
-	journies = bikes.pop_to_journies(pop)
+#	[T, s, m, j] = [100, 44, 10, 90]
+#	[real_journies, pop] = bikes.random_pop(T, s, m, j)
+#	journies = bikes.pop_to_journies(pop)
+	data_file = "feb8good.dat"
+	journies = bikes.get_journies(data_file)
 	pool = mp.Pool(processes=3)
 
 	#set palette
@@ -52,7 +54,7 @@ if __name__ == "__main__":
                 if j[2] != j[-1]:
                         agents.append(actors.Actor(j, new_palette))
 
-	total_time = 100
+	total_time = len(pop)
 	func = functools.partial(print_frame, palette=new_palette, bike_agents=agents)
-	pool.map(func, np.arange(2,total_time, 0.05)) 
+	pool.map(func, np.arange(2,total_time, 1)) 
 
