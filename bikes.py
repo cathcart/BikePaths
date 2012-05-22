@@ -2,6 +2,7 @@ import numpy as np
 #from collections import defaultdict 
 import itertools
 import random
+import os
 
 def total_arrive_leave(pop):
 
@@ -214,7 +215,7 @@ def pop_to_journies(pop):
 	return bikes(al, pop)
 
 def pop_correct(pop):
-	missing_bikes = sum(n_pop[0]) - sum(n_pop[-1])
+	missing_bikes = sum(pop[0]) - sum(pop[-1])
 	if missing_bikes < 0:
 		raise NameError("Stating point not early enough. Either add %d bikes to starting popution or add additional time steps" % abs(missing_bikes))
 	for bike in range(missing_bikes):
@@ -246,24 +247,65 @@ def load_data(file_in):
 
 	return pop
 	
+def write_journies(journeys, data_file):
+
+	out=open(".".join(data_file.split(".")[:-1])+".journey", "w")
+	for j in journies:
+		out.write("%d %d %d %d\n" %(j[0], j[1], j[2], j[3]) )
+
+def read_journies(data_file):
+
+	in_file = open(".".join(data_file.split(".")[:-1])+".journey", "r")
+	journies = []
+	for line in in_file:
+		print line, line.split()
+		journies.append(line.split())
+	return journies
+
+def get_journies(data_file):
+
+	in_file_name = ".".join(data_file.split(".")[:-1])+".journey"
+
+	if os.path.exists(in_file_name):
+		print "Found %s. Reading journies from file" % in_file_name
+		return read_journies(data_file)	
+	else:
+		print "loading pop from file %s" % data_file
+		pop = load_data(data_file).values()
+		print "correcting values"
+		correct_pop = pop_correct(pop)
+		print "calculating values"
+		journies = pop_to_journies(correct_pop)
+		print "writing values to file"
+		write_journies(journies, data_file)
+		return journies
+
 if __name__ == "__main__":
 
-	pop = load_data("feb8good.dat")
-	#print pop
-	n_pop = pop.values()[:]
-	print sum(n_pop[0])
-	print sum(n_pop[-1])
-	correct_pop = pop_correct(n_pop)
-	print sum(correct_pop[0])
-	print sum(correct_pop[-1])
-	journies = pop_to_journies(n_pop)
-	print journies
-	out = open("journies.dat", "w")
-	for time in journies:
-		for station in time:
-			out.write("%d "% station)
-		out.write("\n")
-	out.close()
+	data_file = "feb8good.dat"
+	print get_journies(data_file)
+#	pop = load_data(data_file)
+#	n_pop = pop.values()[:]
+#	print "population ready"
+##	print sum(n_pop[0])
+##	print sum(n_pop[-1])
+#	correct_pop = pop_correct(n_pop)
+#	print "population corrected"
+##	print sum(correct_pop[0])
+##	print sum(correct_pop[-1])
+#	journies = read_journies(data_file)
+#	print "journies read"
+#	#journies = pop_to_journies(correct_pop)
+#	#print "writing journies"
+#	#write_journies(journies, data_file)
+##	journies = pop_to_journies(n_pop)
+##	print journies
+##	out = open("journies.dat", "w")
+##	for time in journies:
+##		for station in time:
+##			out.write("%d "% station)
+##		out.write("\n")
+##	out.close()
 
 ##				multi_trial()
 #				[T, s, m, j] = [6, 3, 10, 4]
