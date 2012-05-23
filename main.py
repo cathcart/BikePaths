@@ -41,6 +41,7 @@ if __name__ == "__main__":
 #	[real_journies, pop] = bikes.random_pop(T, s, m, j)
 #	journies = bikes.pop_to_journies(pop)
 	data_file = "feb8good.dat"
+	pop = bikes.load_data(data_file)
 	journies = bikes.get_journies(data_file)
 	pool = mp.Pool(processes=3)
 
@@ -52,6 +53,7 @@ if __name__ == "__main__":
         agents = []
         for j in journies:
                 if j[2] != j[-1]:
+			print j
                         agents.append(actors.Actor(j, new_palette))
 
 	total_time = len(pop)

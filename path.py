@@ -68,7 +68,11 @@ class Path(object):
 			print "file doesn't exist. download from google"
 		
 			#need to catch this failing
-			directions = urllib2.urlopen("http://maps.googleapis.com/maps/api/directions/xml?origin=%s&destination=%s&sensor=false" % (str(locations[start].lat)+"N"+str(abs(locations[start].lng))+"W", str(locations[end].lat)+"N"+str(abs(locations[end].lng))+"W" ) ).read()
+			try:
+				directions = urllib2.urlopen("http://maps.googleapis.com/maps/api/directions/xml?origin=%s&destination=%s&sensor=false" % (str(locations[start].lat)+"N"+str(abs(locations[start].lng))+"W", str(locations[end].lat)+"N"+str(abs(locations[end].lng))+"W" ) ).read()
+			except KeyError:
+				print start, end
+				raise KeyError
 			file("paths/path_%d_%d.xml" %(start, end), "w").write(directions)
 			time.sleep(1)	
 

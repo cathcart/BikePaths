@@ -14,10 +14,10 @@ def total_arrive_leave(pop):
 			if v != 0:
 				if v < 0:#leave
 					for count in range(abs(v)):
-						leave.append((x,i))
+						leave.append((x,i+1))
 				if v > 0:#arrive
 					for count in range(abs(v)):
-						arrive.append((x,i))
+						arrive.append((x,i+1))
 	
 		#leaving, arriving
 
@@ -52,7 +52,7 @@ def alt_bikes(pop):
 
 	journies = []
 	while len(journies) < len(a):
-		print "Working on journey %d of %d" % (len(journies), len(pop))
+		#print "Working on journey %d of %d" % (len(journies), len(a))
 		start = random.choice(a) #random starting station
 		delta_l = [x for x in l[a.index(start):] if x[1] != start[1]] #acceptable ending stations
 		delta_l = filter(lambda x: distance_time_filter(x), delta_l)
@@ -313,8 +313,7 @@ def read_journies(data_file):
 	in_file = open(".".join(data_file.split(".")[:-1])+".journey", "r")
 	journies = []
 	for line in in_file:
-		print line, line.split()
-		journies.append(line.split())
+		journies.append([int(x) for x in line.split()])
 	return journies
 
 def get_journies(data_file):
