@@ -44,6 +44,16 @@ def alt_correct(arrive, leave):
 def distance_time_filter(x):
 	return True
 
+def acceptable_ending_times(leave, start, total_time):
+	end_time = np.random.poisson(min(start[0] + 6, total_time), 1)
+	acceptable = []
+	delta = -1
+
+	while len(acceptable) < 1:
+		delta += 1
+		acceptable = filter(lambda x: x[0] >= end_time-delta and x[0] <= end_time+delta and x[1] != start[1], leave)
+	return acceptable
+
 def alt_bikes(pop):
 
 	[arrive, leave] = total_arrive_leave(pop)
@@ -54,14 +64,20 @@ def alt_bikes(pop):
 	while len(journies) < len(a):
 		#print "Working on journey %d of %d" % (len(journies), len(a))
 		start = random.choice(a) #random starting station
-		delta_l = [x for x in l[a.index(start):] if x[1] != start[1]] #acceptable ending stations
+		#delta_l = [x for x in l[a.index(start):] if x[1] != start[1]] #acceptable ending stations
+		delta_l = acceptable_ending_times(leave, start, len(pop))
 		delta_l = filter(lambda x: distance_time_filter(x), delta_l)
 		end = random.choice(delta_l)
 
 		journies.append([start[0], end[0], start[1], end[1]])
 		a.pop(a.index(start))
-		l.pop(l.index(end))
+		try:
+			l.pop(l.index(end))
+		except ValueError:
+			print end
+			print l
 
+	print  journies
 	return journies
 	
 
