@@ -57,7 +57,7 @@ if __name__ == "__main__":
 	new_palette = actors.Palette(palette)
 
 	#temp_journies = journies[:1000]
-	temp_journies = journies[:100]
+	temp_journies = random.sample(journies, 1000)
 
 	total_time = len(pop)
 	time_step = 1

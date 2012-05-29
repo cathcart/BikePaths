@@ -45,7 +45,7 @@ def distance_time_filter(x):
 	return True
 
 def acceptable_ending_times(leave, start, total_time):
-	end_time = np.random.poisson(min(start[0] + 6, total_time), 1)
+	end_time = np.random.poisson(min(start[0] + 72, total_time), 1)
 	acceptable = []
 	delta = -1
 
@@ -65,8 +65,9 @@ def alt_bikes(pop):
 		#print "Working on journey %d of %d" % (len(journies), len(a))
 		start = random.choice(a) #random starting station
 		#delta_l = [x for x in l[a.index(start):] if x[1] != start[1]] #acceptable ending stations
-		delta_l = acceptable_ending_times(l, start, len(pop))
-		delta_l = filter(lambda x: distance_time_filter(x), delta_l)
+		#delta_l = acceptable_ending_times(l, start, len(pop))
+		delta_l = filter(lambda x: x[0] >= start[0] and x[1] != start[1], l)
+		#delta_l = filter(lambda x: distance_time_filter(x), delta_l)
 		end = random.choice(delta_l)
 
 		journies.append([start[0], end[0], start[1], end[1]])
@@ -340,7 +341,7 @@ def get_journies(data_file):
 		pop = load_data(data_file)
 		print "calculating values"
 		#journies = alt_bikes(pop)
-		journies = alt_bikes(pop[:100])
+		journies = alt_bikes(pop)
 		print "writing values to file"
 		write_journies(journies, data_file)
 		return journies
