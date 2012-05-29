@@ -65,19 +65,15 @@ def alt_bikes(pop):
 		#print "Working on journey %d of %d" % (len(journies), len(a))
 		start = random.choice(a) #random starting station
 		#delta_l = [x for x in l[a.index(start):] if x[1] != start[1]] #acceptable ending stations
-		delta_l = acceptable_ending_times(leave, start, len(pop))
+		delta_l = acceptable_ending_times(l, start, len(pop))
 		delta_l = filter(lambda x: distance_time_filter(x), delta_l)
 		end = random.choice(delta_l)
 
 		journies.append([start[0], end[0], start[1], end[1]])
+		print len(journies), len(a)
 		a.pop(a.index(start))
-		try:
-			l.pop(l.index(end))
-		except ValueError:
-			print end
-			print l
+		l.pop(l.index(end))
 
-	print  journies
 	return journies
 	
 
@@ -343,7 +339,8 @@ def get_journies(data_file):
 		print "loading pop from file %s" % data_file
 		pop = load_data(data_file)
 		print "calculating values"
-		journies = alt_bikes(pop)
+		#journies = alt_bikes(pop)
+		journies = alt_bikes(pop[:100])
 		print "writing values to file"
 		write_journies(journies, data_file)
 		return journies
