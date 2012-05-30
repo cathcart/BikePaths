@@ -1,5 +1,6 @@
 import multiprocessing as mp
 import numpy as np
+import random
 import functools
 import actors
 import bikes
@@ -57,6 +58,7 @@ if __name__ == "__main__":
 	new_palette = actors.Palette(palette)
 
 	#temp_journies = journies[:1000]
+	print "journies", len(journies)
 	temp_journies = random.sample(journies, 1000)
 
 	total_time = len(pop)

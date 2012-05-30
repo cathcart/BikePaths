@@ -28,7 +28,7 @@ def alt_correct(arrive, leave):
 	l = len(arrive) - len(leave)
 
 	if l == 0:
-		return [arrive, leave]
+		return [sorted(arrive, key=lambda x: x[0]), sorted(leave, key=lambda x: x[0])]
 
 	elif l > 0:
 		#add to leave
@@ -61,19 +61,26 @@ def alt_bikes(pop):
 	[a, l] = alt_correct(arrive, leave)
 
 	journies = []
-	while len(journies) < len(a):
+	Total_journies = len(a)
+	while len(journies) < Total_journies:
+		print len(journies), Total_journies
 		#print "Working on journey %d of %d" % (len(journies), len(a))
-		start = random.choice(a) #random starting station
+		start = random.choice(l) #random starting station
 		#delta_l = [x for x in l[a.index(start):] if x[1] != start[1]] #acceptable ending stations
 		#delta_l = acceptable_ending_times(l, start, len(pop))
-		delta_l = filter(lambda x: x[0] >= start[0] and x[1] != start[1], l)
+		delta_l = filter(lambda x: x[0] >= start[0] and x[1] != start[1], a)
 		#delta_l = filter(lambda x: distance_time_filter(x), delta_l)
-		end = random.choice(delta_l)
+		try:
+			end = random.choice(delta_l)
+		except IndexError:
+			print delta_l
+			print start
+			print filter(lambda x: x[0] >= start[0], a)
+			raise Error
 
 		journies.append([start[0], end[0], start[1], end[1]])
-		print len(journies), len(a)
-		a.pop(a.index(start))
-		l.pop(l.index(end))
+		l.pop(l.index(start))
+		a.pop(a.index(end))
 
 	return journies
 	
