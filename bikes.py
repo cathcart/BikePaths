@@ -28,6 +28,7 @@ def alt_correct(arrive, leave):
 	l = len(arrive) - len(leave)
 
 	if l == 0:
+	return [sorted(arrive, key=lambda x: x[0]), sorted(leave, key=lambda x: x[0])]
 		return [arrive, leave]
 
 	elif l > 0:
