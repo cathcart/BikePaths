@@ -298,7 +298,7 @@ def load_data(file_in):
 
 	pop = []
 	for line in open(file_in).read().strip().split("\n"):
-		items = line.strip().split(" ")
+		items = line.strip().split()
 		try:
 			#pop[float(items[0])] = [int(x) for x in items[1:]]
 			pop.append([int(x) for x in items[1:]])

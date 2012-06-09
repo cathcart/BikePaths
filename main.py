@@ -39,15 +39,12 @@ def load_and_print(time, time_delta, journies, total_time, palette):
 	print "printing frame %d / %d (%d)" % (time, total_time, len(active_j))
 	print_frame(time, palette, [actors.Actor(j, palette) for j in active_j])
 
+def func2(here):
+	print here
 
 if __name__ == "__main__":
 
-
-
-#	[T, s, m, j] = [100, 44, 10, 90]
-#	[real_journies, pop] = bikes.random_pop(T, s, m, j)
-#	journies = bikes.pop_to_journies(pop)
-	data_file = sys.argv[-1]
+	data_file = "data.dat"
 	pop = bikes.load_data(data_file)
 	journies = bikes.get_journies(data_file)
 	pool = mp.Pool(processes=2)
@@ -62,21 +59,5 @@ if __name__ == "__main__":
 	time_step = 1
 
 	func = functools.partial(load_and_print, time_delta=time_step, journies=temp_journies, total_time=total_time, palette=new_palette)
-	pool.map(func, np.arange(0,total_time, time_step)) 
-
-#	for t in np.arange(0,total_time,time_step):
-#		load_and_print(t, time_step, temp_journies, total_time, new_palette)
-
-#	#setup_bike_agents
-#	print len(journies)
-#        agents = []
-#        for j in journies[:1000]:
-#                if j[2] != j[-1]:
-#			print j
-#                        agents.append(actors.Actor(j, new_palette))
-#
-#	print "agents setup"
-#	total_time = len(pop)
-#	func = functools.partial(print_frame, palette=new_palette, bike_agents=agents)
-#	pool.map(func, np.arange(0,total_time, 1)) 
-#
+	pool.map(func, range(0,total_time, time_step)) 
+	#pool.map(func, np.arange(0,total_time, time_step)) 
