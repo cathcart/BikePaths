@@ -1,7 +1,6 @@
 import multiprocessing as mp
 import numpy as np
 import functools
-import random
 import actors
 import bikes
 try:
@@ -32,8 +31,7 @@ def print_frame(time, palette, bike_agents):
 	actors.plot_stations(palette, ax)
 
 	#plot output
-	#canvas.print_figure('alt_%05d'%int(100*time))
-	canvas.print_figure('alt_%05d'%int(time))
+	canvas.print_figure('alt_%05d'%int(100*time))
 
 def load_and_print(time, time_delta, journies, total_time, palette):
 	active_j = filter(lambda x: x[0] <= time + time_delta and x[1] > time + time_delta, journies) 
@@ -57,8 +55,7 @@ if __name__ == "__main__":
 	palette = ["#F1B2E1", "#B1DDF3", "#FFDE89", "#E3675C", "#C2D985"]		
 	new_palette = actors.Palette(palette)
 
-	#temp_journies = journies[:1000]
-	temp_journies = random.sample(journies, 1000)
+	temp_journies = journies[:1000]
 
 	total_time = len(pop)
 	time_step = 1
