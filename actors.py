@@ -5,6 +5,7 @@ import random
 import numpy as np
 import xml.etree.cElementTree as etree
 import urllib2
+import hardcode_stations
 try:
 	from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 	from matplotlib.figure import Figure
@@ -82,7 +83,8 @@ class Palette(object):
 	        lat_lng_locations = path.get_station_locations().values()
 	        locations = [mercator_projection(v) for v in lat_lng_locations]
 	
-		splits = self.__kmeans(locations,len(self.default))
+		#splits = self.__kmeans(locations,len(self.default))
+		splits = hardcode_stations.Hstation
 	
 		self.palette = {}
 		for v in range(len(self.default)):

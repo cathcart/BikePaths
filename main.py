@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
 	#temp_journies = journies[:1000]
 	print "journies", len(journies)
-	temp_journies = random.sample(journies, 1000)
+	temp_journies = random.sample(journies, 100)
 
 	total_time = len(pop)
 	time_step = 1

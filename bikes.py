@@ -45,14 +45,16 @@ def distance_time_filter(x):
 	return True
 
 def acceptable_ending_times(leave, start, total_time):
-	end_time = np.random.poisson(min(start[0] + 72, total_time), 1)
-	acceptable = []
-	delta = -1
+	
+	n = 5#max number of time units to allow
+	k = 1
+	region = filter(lambda x: x[0] >= start[0] and x[0] <= start[0] + k*n and x[1] != start[1], a)
 
-	while len(acceptable) < 1:
-		delta += 1
-		acceptable = filter(lambda x: x[0] >= end_time-delta and x[0] <= end_time+delta and x[1] != start[1], leave)
-	return acceptable
+	while len(region) == 0:
+		k += 1
+		region = filter(lambda x: x[0] >= start[0] and x[0] <= start[0] + k*n and x[1] != start[1], a)
+	
+	return region
 
 def alt_bikes(pop):
 
@@ -66,10 +68,8 @@ def alt_bikes(pop):
 		print len(journies), Total_journies
 		#print "Working on journey %d of %d" % (len(journies), len(a))
 		start = random.choice(l) #random starting station
-		#delta_l = [x for x in l[a.index(start):] if x[1] != start[1]] #acceptable ending stations
-		#delta_l = acceptable_ending_times(l, start, len(pop))
-		delta_l = filter(lambda x: x[0] >= start[0] and x[1] != start[1], a)
-		#delta_l = filter(lambda x: distance_time_filter(x), delta_l)
+		delta_l = acceptable_ending_times(l, start, len(pop))
+		#delta_l = filter(lambda x: x[0] >= start[0] and x[1] != start[1], a)
 		try:
 			end = random.choice(delta_l)
 		except IndexError:
