@@ -44,6 +44,16 @@ def alt_correct(arrive, leave):
 def distance_time_filter(x):
 	return True
 
+def acceptable_ending_times(start, arrive):
+        max_time = 5#max number of time units to allow
+        min_time = 5#max number of time units to allow
+        k = 1
+        region = filter(lambda x: x[0] > start[0] and x[0] <= start[0] + k*max_time and x[1] != start[1], arrive)
+       	if len(region) == 0:
+                region = filter(lambda x: x[0] > start[0] and x[1] != start[1], arrive)
+		print "problem", region, start, arrive[-1]
+        return region
+
 def alt_bikes(pop):
 
 	[arrive, leave] = total_arrive_leave(pop)
@@ -51,16 +61,18 @@ def alt_bikes(pop):
 	[a, l] = alt_correct(arrive, leave)
 
 	journies = []
-	while len(journies) < len(a):
+	while len(journies) < len(l):
 		#print "Working on journey %d of %d" % (len(journies), len(a))
-		start = random.choice(a) #random starting station
-		delta_l = [x for x in l[a.index(start):] if x[1] != start[1]] #acceptable ending stations
-		delta_l = filter(lambda x: distance_time_filter(x), delta_l)
-		end = random.choice(delta_l)
-
-		journies.append([start[0], end[0], start[1], end[1]])
-		a.pop(a.index(start))
-		l.pop(l.index(end))
+		start = random.choice(l) #random starting station
+		l.pop(l.index(start))
+		delta_l = acceptable_ending_times(start, a)
+		try:
+			end = random.choice(delta_l)
+			journies.append([start[0], end[0], start[1], end[1]])
+			print start, end
+			a.pop(a.index(end))
+		except:
+			print "problem with journey, ignoring"
 
 	return journies
 	

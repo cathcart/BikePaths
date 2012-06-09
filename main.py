@@ -3,6 +3,7 @@ import numpy as np
 import functools
 import actors
 import bikes
+import sys
 try:
 	from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 	from matplotlib.figure import Figure
@@ -46,7 +47,7 @@ if __name__ == "__main__":
 #	[T, s, m, j] = [100, 44, 10, 90]
 #	[real_journies, pop] = bikes.random_pop(T, s, m, j)
 #	journies = bikes.pop_to_journies(pop)
-	data_file = "feb8good.dat"
+	data_file = sys.argv[-1]
 	pop = bikes.load_data(data_file)
 	journies = bikes.get_journies(data_file)
 	pool = mp.Pool(processes=2)
