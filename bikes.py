@@ -44,6 +44,7 @@ def alt_correct(arrive, leave):
 def distance_time_filter(x):
 	return True
 
+<<<<<<< HEAD
 def acceptable_ending_times(leave, start, total_time):
 	
 	n = 5#max number of time units to allow
@@ -55,6 +56,17 @@ def acceptable_ending_times(leave, start, total_time):
 		region = filter(lambda x: x[0] >= start[0] and x[0] <= start[0] + k*n and x[1] != start[1], a)
 	
 	return region
+=======
+def acceptable_ending_times(start, arrive):
+        max_time = 5#max number of time units to allow
+        min_time = 5#max number of time units to allow
+        k = 1
+        region = filter(lambda x: x[0] > start[0] and x[0] <= start[0] + k*max_time and x[1] != start[1], arrive)
+       	if len(region) == 0:
+                region = filter(lambda x: x[0] > start[0] and x[1] != start[1], arrive)
+		print "problem", region, start, arrive[-1]
+        return region
+>>>>>>> old_working
 
 def alt_bikes(pop):
 
@@ -63,6 +75,7 @@ def alt_bikes(pop):
 	[a, l] = alt_correct(arrive, leave)
 
 	journies = []
+<<<<<<< HEAD
 	Total_journies = len(a)
 	while len(journies) < Total_journies:
 		print len(journies), Total_journies
@@ -81,6 +94,20 @@ def alt_bikes(pop):
 		journies.append([start[0], end[0], start[1], end[1]])
 		l.pop(l.index(start))
 		a.pop(a.index(end))
+=======
+	while len(journies) < len(l):
+		#print "Working on journey %d of %d" % (len(journies), len(a))
+		start = random.choice(l) #random starting station
+		l.pop(l.index(start))
+		delta_l = acceptable_ending_times(start, a)
+		try:
+			end = random.choice(delta_l)
+			journies.append([start[0], end[0], start[1], end[1]])
+			print start, end
+			a.pop(a.index(end))
+		except:
+			print "problem with journey, ignoring"
+>>>>>>> old_working
 
 	return journies
 	
@@ -306,7 +333,7 @@ def load_data(file_in):
 
 	pop = []
 	for line in open(file_in).read().strip().split("\n"):
-		items = line.strip().split(" ")
+		items = line.strip().split()
 		try:
 			#pop[float(items[0])] = [int(x) for x in items[1:]]
 			pop.append([int(x) for x in items[1:]])

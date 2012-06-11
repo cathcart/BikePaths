@@ -49,20 +49,20 @@ class Path(object):
 	def __call_maps(self, start, end, locations):
 	
 		#check if paths folder exists
-		if not os.path.exists("paths"):
+		if not os.path.exists("/Users/thomascathcart/bikes_flow/paths"):
 			try:
-				os.mkdir("paths")
+				os.mkdir("/Users/thomascathcart/bikes_flow/paths")
 			except OSError:
 				print "Something has gone horribly wrong. Tried to create a folder where one already existed. Exiting now."
 				os.exit(1)
 				
 		#check if the file exists first
-		if os.path.exists("paths/path_%d_%d.xml" %(start, end)) or os.path.exists("paths/path_%d_%d.xml" %(end, start)):
+		if os.path.exists("paths/path_%d_%d.xml" %(start, end)) or os.path.exists("/Users/thomascathcart/bikes_flow/paths/path_%d_%d.xml" %(end, start)):
 			print "Load path info from file"
-			if os.path.exists("paths/path_%d_%d.xml" %(start, end)):
-				directions = file("paths/path_%d_%d.xml" %(start, end)).read()
+			if os.path.exists("/Users/thomascathcart/bikes_flow/paths/path_%d_%d.xml" %(start, end)):
+				directions = file("/Users/thomascathcart/bikes_flow/paths/path_%d_%d.xml" %(start, end)).read()
 			else:
-				directions = file("paths/path_%d_%d.xml" %(end, start)).read()
+				directions = file("/Users/thomascathcart/bikes_flow/paths/path_%d_%d.xml" %(end, start)).read()
 				self.reverse = True
 		else:
 			print "file doesn't exist. download from google"
@@ -73,7 +73,7 @@ class Path(object):
 			except KeyError:
 				print start, end
 				raise KeyError
-			file("paths/path_%d_%d.xml" %(start, end), "w").write(directions)
+			file("/Users/thomascathcart/bikes_flow/paths/path_%d_%d.xml" %(start, end), "w").write(directions)
 			time.sleep(1)	
 
 		return directions
