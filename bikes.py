@@ -44,19 +44,6 @@ def alt_correct(arrive, leave):
 def distance_time_filter(x):
 	return True
 
-<<<<<<< HEAD
-def acceptable_ending_times(leave, start, total_time):
-	
-	n = 5#max number of time units to allow
-	k = 1
-	region = filter(lambda x: x[0] >= start[0] and x[0] <= start[0] + k*n and x[1] != start[1], a)
-
-	while len(region) == 0:
-		k += 1
-		region = filter(lambda x: x[0] >= start[0] and x[0] <= start[0] + k*n and x[1] != start[1], a)
-	
-	return region
-=======
 def acceptable_ending_times(start, arrive):
         max_time = 5#max number of time units to allow
         min_time = 5#max number of time units to allow
@@ -66,7 +53,6 @@ def acceptable_ending_times(start, arrive):
                 region = filter(lambda x: x[0] > start[0] and x[1] != start[1], arrive)
 		print "problem", region, start, arrive[-1]
         return region
->>>>>>> old_working
 
 def alt_bikes(pop):
 
@@ -75,26 +61,6 @@ def alt_bikes(pop):
 	[a, l] = alt_correct(arrive, leave)
 
 	journies = []
-<<<<<<< HEAD
-	Total_journies = len(a)
-	while len(journies) < Total_journies:
-		print len(journies), Total_journies
-		#print "Working on journey %d of %d" % (len(journies), len(a))
-		start = random.choice(l) #random starting station
-		delta_l = acceptable_ending_times(l, start, len(pop))
-		#delta_l = filter(lambda x: x[0] >= start[0] and x[1] != start[1], a)
-		try:
-			end = random.choice(delta_l)
-		except IndexError:
-			print delta_l
-			print start
-			print filter(lambda x: x[0] >= start[0], a)
-			raise Error
-
-		journies.append([start[0], end[0], start[1], end[1]])
-		l.pop(l.index(start))
-		a.pop(a.index(end))
-=======
 	while len(journies) < len(l):
 		#print "Working on journey %d of %d" % (len(journies), len(a))
 		start = random.choice(l) #random starting station
@@ -107,7 +73,6 @@ def alt_bikes(pop):
 			a.pop(a.index(end))
 		except:
 			print "problem with journey, ignoring"
->>>>>>> old_working
 
 	return journies
 	
