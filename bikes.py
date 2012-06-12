@@ -347,7 +347,7 @@ def get_journies(data_file):
 
 if __name__ == "__main__":
 
-	data_file = "feb8good.dat"
+	data_file = "data.dat"
 	print get_journies(data_file)
 #	pop = load_data(data_file)
 #	n_pop = pop.values()[:]

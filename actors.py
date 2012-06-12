@@ -84,7 +84,7 @@ class Palette(object):
 	        locations = [mercator_projection(v) for v in lat_lng_locations]
 	
 		#splits = self.__kmeans(locations,len(self.default))
-		splits = hardcode_stations.Hstation
+		splits = hardcode_stations.Hstations
 	
 		self.palette = {}
 		for v in range(len(self.default)):

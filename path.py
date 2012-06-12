@@ -8,6 +8,7 @@ import numpy as np
 import collections
 
 LatLng = collections.namedtuple("LatLng", ["lat", "lng"])
+my_path_dir = "./paths"
 
 def get_station_locations():
 
@@ -49,20 +50,20 @@ class Path(object):
 	def __call_maps(self, start, end, locations):
 	
 		#check if paths folder exists
-		if not os.path.exists("/Users/thomascathcart/bikes_flow/paths"):
+		if not os.path.exists(my_path_dir):
 			try:
-				os.mkdir("/Users/thomascathcart/bikes_flow/paths")
+				os.mkdir(my_path_dir)
 			except OSError:
 				print "Something has gone horribly wrong. Tried to create a folder where one already existed. Exiting now."
 				os.exit(1)
 				
 		#check if the file exists first
-		if os.path.exists("paths/path_%d_%d.xml" %(start, end)) or os.path.exists("/Users/thomascathcart/bikes_flow/paths/path_%d_%d.xml" %(end, start)):
+		if os.path.exists("%s/path_%d_%d.xml" %(my_path_dir, start, end)):
 			print "Load path info from file"
-			if os.path.exists("/Users/thomascathcart/bikes_flow/paths/path_%d_%d.xml" %(start, end)):
-				directions = file("/Users/thomascathcart/bikes_flow/paths/path_%d_%d.xml" %(start, end)).read()
+			if os.path.exists("%s/path_%d_%d.xml" %(my_path_dir, start, end)):
+				directions = file("%s/path_%d_%d.xml" %(my_path_dir, start, end)).read()
 			else:
-				directions = file("/Users/thomascathcart/bikes_flow/paths/path_%d_%d.xml" %(end, start)).read()
+				directions = file("%s/path_%d_%d.xml" %(my_path_dir, start, end)).read()
 				self.reverse = True
 		else:
 			print "file doesn't exist. download from google"
@@ -73,7 +74,14 @@ class Path(object):
 			except KeyError:
 				print start, end
 				raise KeyError
-			file("/Users/thomascathcart/bikes_flow/paths/path_%d_%d.xml" %(start, end), "w").write(directions)
+			try:
+				file_to_write_to = file("%s/path_%d_%d.xml" %(my_path_dir, start, end), "w")
+				file_to_write_to.write(directions)
+				file_to_write_to.close()
+				#file("%s/path_%d_%d.xml" %(my_path_dir, start, end)).write(directions)
+			except:
+				print directions
+				raise error
 			time.sleep(1)	
 
 		return directions

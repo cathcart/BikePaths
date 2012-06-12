@@ -34,7 +34,8 @@ def print_frame(time, palette, bike_agents):
 
 	#plot output
 	#canvas.print_figure('alt_%05d'%int(100*time))
-	canvas.print_figure('alt_%05d'%int(time))
+	print 'alt_%05d'%int(100*time)
+	canvas.print_figure('alt_%05d'%int(100*time))
 
 def load_and_print(time, time_delta, journies, total_time, palette):
 	active_j = filter(lambda x: x[0] <= time + time_delta and x[1] > time + time_delta, journies) 
@@ -49,7 +50,6 @@ if __name__ == "__main__":
 	data_file = "data.dat"
 	pop = bikes.load_data(data_file)
 	journies = bikes.get_journies(data_file)
-	pool = mp.Pool(processes=2)
 
 	#set palette
 	palette = ["#F1B2E1", "#B1DDF3", "#FFDE89", "#E3675C", "#C2D985"]		
@@ -60,8 +60,8 @@ if __name__ == "__main__":
 	temp_journies = random.sample(journies, 100)
 
 	total_time = len(pop)
-	time_step = 1
+	time_step = 0.05
 
 	func = functools.partial(load_and_print, time_delta=time_step, journies=temp_journies, total_time=total_time, palette=new_palette)
-	pool.map(func, range(0,total_time, time_step)) 
-	#pool.map(func, np.arange(0,total_time, time_step)) 
+	pool = mp.Pool(processes=2)
+	pool.map(func, np.arange(0,total_time, time_step)) 
