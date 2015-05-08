@@ -82,7 +82,7 @@ class Path(object):
 			except:
 				print directions
 				raise error
-			time.sleep(1)	
+			time.sleep(5)	
 
 		return directions
 
@@ -107,8 +107,7 @@ class Path(object):
 		#calculate the distance between two long lat points with the haversine formula
 		lat1, lon1 = start.lat, start.lng
 		lat2, lon2 = end.lat, end.lng
-		#radius = 6371 # km
-		radius =  6378137 # m	epsg:3857 std
+		radius =  6378137.0 # m	epsg:3857 std
 	
 		dlat = math.radians(lat2-lat1)
 		dlon = math.radians(lon2-lon1)

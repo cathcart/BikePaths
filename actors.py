@@ -6,24 +6,24 @@ import numpy as np
 import xml.etree.cElementTree as etree
 import urllib2
 import hardcode_stations
+import pickle
+import os
 try:
 	from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 	from matplotlib.figure import Figure
 	import matplotlib.pyplot as plt
-except ImportError:
-	pass
-	#raise NameError("I'm not going to plot anything for you")
+except ImportError, e:
+	raise NameError("I'm not going to plot anything for you\n",e)
 
 class Actor(path.Path):
 	def __init__(self, journey, palette):
 		self.start_time = journey[0]
 		self.end_time = journey[1]
-		#self.time_delta = self.end_time - self.start_time -1
 		self.time_delta = self.end_time - self.start_time 
 
 		super(Actor, self).__init__(journey[2], journey[3])
 
-		self.colour = palette[self.start -1]
+		self.colour = palette[self.start]
 
 	def call(self, plt_obj, time):
 		if time >= self.start_time and time < self.end_time:
@@ -41,7 +41,7 @@ class Actor(path.Path):
 	
 	def plot_lines(self, plt_obj, time):
 
-		#for cut in np.arange(0,1,0.05):
+		#for cut in np.arange(0,1,0.05): #these could be used to give the paths a faded effect
 		#for cut in np.arange(0.5,1.2,0.5):
 		for cut in [max(time-0.1, 0)]:
 			x0 = []
@@ -54,12 +54,11 @@ class Actor(path.Path):
 				y0.append(b)
 #				if cut != 0:
 #					my_alpha = cut
-			plt_obj.plot(x0, y0, self.colour, alpha = my_alpha, linewidth=4)
+			plt_obj.plot(x0, y0, self.colour, alpha = my_alpha, linewidth=1)
 
 	def plot_points(self, plt_obj, time):
 		[x, y] = mercator_projection(self.position(time))[:]
-		plt_obj.plot(x, y, c=self.colour, marker="o", markeredgecolor=self.colour)
-		#plt_obj.plot(x, y, "ko")
+		plt_obj.plot(x, y, c=self.colour, marker="o", markeredgecolor=self.colour, markersize=2.0)
 
 def mercator_projection(value):
 
@@ -68,11 +67,24 @@ def mercator_projection(value):
 
 	[lat, lng] = value
 
-	radius =  6378137 # m	epsg:3857 std
+	radius =  6378137.0 # m	epsg:3857 std
 	x = math.radians(lng) * radius
+	y = radius * math.log(math.tan(math.radians((90 + lat)/2)))
 	y = radius * math.log(math.tan(math.radians((90 + lat)/2)))
 
 	return (x, y)
+
+def pickle_write(object, file_name="swarm.pkl"):
+	output = open(file_name, 'wb')
+	# Pickle the list using the highest protocol available.
+	pickle.dump(object, output, -1)
+	output.close()
+
+def pickle_read(file_name="swarm.pkl"):
+	pkl_file = open(file_name, 'rb')
+	object = pickle.load(pkl_file)
+	pkl_file.close()
+	return object
 
 class Palette(object):
 	def __init__(self, default_palette):
@@ -82,14 +94,20 @@ class Palette(object):
 	def __setup(self):
 	        lat_lng_locations = path.get_station_locations().values()
 	        locations = [mercator_projection(v) for v in lat_lng_locations]
-	
-		#splits = self.__kmeans(locations,len(self.default))
-		splits = hardcode_stations.Hstations
+
+		if not os.path.isfile("stations_split.pkl"):
+			pickle_write(self.__kmeans(locations,len(self.default)), "stations_split.pkl")
+		
+		splits = pickle_read("stations_split.pkl")	
+
+		loc = path.get_station_locations()
+		inv_loc = dict((mercator_projection(v),k) for k, v in loc.iteritems())
 	
 		self.palette = {}
-		for v in range(len(self.default)):
-			for x in splits.values()[v]:
-				self.palette[locations.index(x)] = self.default[v]
+		for x in splits.keys():
+			i = splits.keys().index(x)
+			for y in splits[x]:
+				self.palette[inv_loc[y]] = self.default[i]
 
 	def __random(self):
 		#don't use this. it really isn't working
@@ -118,12 +136,6 @@ class Palette(object):
 	        	return math.sqrt(pow(a[0]-b[0],2) + pow(a[1]-b[1],2))
 	
 		mean_points = [random.choice(data) for x in range(n)]
-#		for i in range(n):
-#			x = random.uniform(min(data)[0], max(data)[0])
-#			y = random.uniform(min(data)[1], max(data)[1])
-#	
-#			mean_points.append((x, y))
-	
 	
 		for i in range(10):
 			split_points = [[] for x in mean_points]
@@ -131,7 +143,6 @@ class Palette(object):
 			for point in data:
 				distances = [distance(point, x) for x in mean_points]
 				split_points[distances.index(min(distances))].append(point)
-	
 	
 			for v in range(n):
 				mean_points[v] = tuple([(1.0/len(split_points[v]))*t for t in reduce(lambda x,y: (x[0]+y[0], x[1]+y[1]), split_points[v])])
@@ -144,15 +155,17 @@ def plot_stations(new_palette, plt_obj):
       	lat_lng_locations = path.get_station_locations().values()
         locations = [mercator_projection(v) for v in lat_lng_locations]
 	
+	loc = path.get_station_locations()
+	inv_loc = dict((mercator_projection(v),k) for k, v in loc.iteritems())
+
 	for pos in locations:
-		colour = new_palette[locations.index(pos)]
-		plt_obj.plot(pos[0], pos[1], alpha=0.5, c=colour, marker="o", markeredgecolor=colour, markersize=8.0)
+		colour = new_palette[inv_loc[pos]]
+		plt_obj.plot(pos[0], pos[1], alpha=0.8, c=colour, marker="o", markeredgecolor=colour, markersize=4.0)
+
 		
 if __name__ == "__main__":
 
-		
 	[T, s, m, j] = [100, 44, 10, 90]
-	#[T, s, m, j] = [10, 44, 100, 1]
 	[real_journies, pop] = bikes.random_pop(T, s, m, j)
 	journies = bikes.pop_to_journies(pop)
 
