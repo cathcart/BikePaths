@@ -15,7 +15,7 @@ except ImportError, e:
 	print "matplotlib error"
 	raise NameError("I'm not going to plot anything for you", e)
 
-def print_frame(time, time_delta, sim_duration, sim_start, palette, bike_agents):
+def print_frame(time, time_delta, time_info, palette, bike_agents):
 
 	#setup plot object
 	fig = Figure()
@@ -26,7 +26,7 @@ def print_frame(time, time_delta, sim_duration, sim_start, palette, bike_agents)
 	ax.set_axis_off()
 	ax.axis([-700000, -694000, 7.044*pow(10,6), 6000 + 7.044*pow(10,6)])
 	ax.set_autoscale_on(False)
-	frame_time = sim_start + (time/time_delta)*(sim_duration)/(239.0/time_delta)
+	frame_time = time_info.start + (time/time_delta)*(time_info.duration)/(time_info.steps/time_delta)
 	ax.text(-699900, 100+7.044e6, datetime.datetime.fromtimestamp(int(frame_time)).strftime('%Y-%m-%d %H:%M:%S'), bbox=dict(facecolor='white', alpha=1.0))
 
 	for bike in bike_agents:
@@ -38,15 +38,15 @@ def print_frame(time, time_delta, sim_duration, sim_start, palette, bike_agents)
 	print 'frame_%05d'%int(100*time)
 	canvas.print_figure('frame_%05d'%int(10*time), dpi=240, facecolor=(1, 1, 1, 0))
 
-def load_and_print(time, time_delta, sim_duration, sim_start, journies, total_time, palette):
+def load_and_print(time, time_delta, time_info, journies, total_time, palette):
 	active_j = filter(lambda x: x[0] <= time + time_delta and x[1] > time + time_delta, journies) 
 	print "printing frame %d / %d (%d)" % (time, total_time, len(active_j))
-	print_frame(time, time_delta, sim_duration, sim_start, palette, [actors.Actor(j, palette) for j in active_j])
+	print_frame(time, time_delta, time_info, palette, [actors.Actor(j, palette) for j in active_j])
 
 if __name__ == "__main__":
 
 	data_file = "data.dat" #data file listing the number of bikes at each station
-	pop, time_delta, time0 = bikes.load_data(data_file)
+	pop, time_info = bikes.load_data(data_file)
 	journies = bikes.get_journies(data_file)
 
 	#set palette
@@ -55,6 +55,6 @@ if __name__ == "__main__":
 
 	total_time = len(pop)
 	time_step = 0.25
-	func = functools.partial(load_and_print, time_delta=time_step, sim_duration=time_delta, sim_start=time0, journies=journies, total_time=total_time, palette=new_palette)
+	func = functools.partial(load_and_print, time_delta=time_step, time_info=time_info, journies=journies, total_time=total_time, palette=new_palette)
 	pool = mp.Pool(processes=3)
 	pool.map(func, np.arange(0,total_time, time_step)) 

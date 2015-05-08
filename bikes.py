@@ -1,7 +1,10 @@
 import numpy as np
 import itertools
+import collections
 import random
 import os
+
+TimeInfo = collections.namedtuple("TimeInfo", ["duration", "start", "steps"])
 
 def total_arrive_leave(pop):
 
@@ -94,7 +97,8 @@ def load_data(file_in):
 			print items[0]
 			raise ValueError
 
-	return pop, times[-1]-times[0], times[0]
+	
+	return pop, TimeInfo(duration=times[-1]-times[0], start=times[0], steps=len(times))
 	
 def write_journies(journies, data_file):
 
@@ -119,7 +123,7 @@ def get_journies(data_file):
 		return read_journies(data_file)	
 	else:
 		print "loading pop from file %s" % data_file
-		pop, time_delta, time0 = load_data(data_file)
+		pop, time_info = load_data(data_file)
 		print "calculating values"
 		journies = bikes(pop)
 		print "writing values to file"
