@@ -1,16 +1,9 @@
 Bike paths visualiser   
 ========
 
-### A Visualisation of the journies taken by Dublin Bikes users.
+### A Visualisation of the journeys taken by Dublin Bikes users.
 
-The code takes station population data, scraped from [dublin bikes](http://www.dublinbikes.ie/), to create a series possible journies. 
+The code takes station population data, scraped from the [Dublin bikes site](http://www.dublinbikes.ie/), to create a series possible journeys. By examining how the station populations change with time we can see when bikes leave and arrive at stations. Journeys are estimated by matching a beginning, a start time and station number, with an end, an arrival time and station number. Path data is approximated from [Google maps](www.maps.google.com). 
 
-Path data is taken from [Google maps](www.maps.google.com). 
-
-Individual frames are rendered using the [matplotlib](http://matplotlib.org/) library, these are then compiled using _ffmpeg_.
-
-The visualisations are for
-
-run with mencoder mf://alt_*.png -mf fps=24:type=png -ovc lavc -lavcopts vcodec=mpeg4:mbd=0:trell -oac copy -o output.avi
-
+Individual frames are rendered using the [matplotlib](http://matplotlib.org/) library, these are then compiled into a video using _ffmpeg_.
 
