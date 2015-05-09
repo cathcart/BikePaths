@@ -26,7 +26,7 @@ def print_frame(time, time_delta, time_info, palette, bike_agents):
 	ax.set_axis_off()
 	ax.axis([-700000, -694000, 7.044*pow(10,6), 6000 + 7.044*pow(10,6)])
 	ax.set_autoscale_on(False)
-	frame_time = time_info.start + (time/time_delta)*(time_info.duration)/(time_info.steps/time_delta)
+	frame_time = time_info.start + (time/(time_info.steps))*time_info.duration
 	ax.text(-699900, 100+7.044e6, datetime.datetime.fromtimestamp(int(frame_time)).strftime('%Y-%m-%d %H:%M:%S'), bbox=dict(facecolor='white', alpha=1.0))
 
 	for bike in bike_agents:
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 	palette = ["#F1B2E1", "#B1DDF3", "#FFDE89", "#E3675C", "#C2D985"]		
 	new_palette = actors.Palette(palette)
 
-	total_time = len(pop)
+	total_time = time_info.steps
 	time_step = 0.25
 	func = functools.partial(load_and_print, time_delta=time_step, time_info=time_info, journies=journies, total_time=total_time, palette=new_palette)
 	pool = mp.Pool(processes=3)
