@@ -9,3 +9,8 @@ Individual frames are rendered using the [matplotlib](http://matplotlib.org/) li
 
 This work was featured in the [Science Gallery Hack the City](https://dublin.sciencegallery.com/hackthecity/) exhibit as part of the [DynamicDublin](https://dublin.sciencegallery.com/hackthecity/dynamicdublin/) group.
 
+
+### Visualisations
+https://www.youtube.com/playlist?list=PLYHnaycp11CSIvhWhJAhdekKJINDZN0ez
+
+[![BikePaths visualised journies](http://img.youtube.com/vi/_9m9Ygdxp8Q/1.jpg)](https://www.youtube.com/playlist?list=PLYHnaycp11CSIvhWhJAhdekKJINDZN0ez)
