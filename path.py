@@ -65,6 +65,12 @@ class Path(object):
 			else:
 				directions = file("%s/path_%d_%d.xml" %(my_path_dir, start, end)).read()
 				self.reverse = True
+			tree = etree.fromstring(directions)
+			if tree.findtext("status") == "OVER_QUERY_LIMIT":
+				print "Problem with saved path.\n Removing it, try running agin"
+				print self.start, self.end
+				os.remove("%s/path_%d_%d.xml" %(my_path_dir, start, end))
+				raise NameError("Bad path file. Rerun program.")
 		else:
 			print "file doesn't exist. download from google"
 		
@@ -92,7 +98,12 @@ class Path(object):
 	
 		p = tree.findtext("route/overview_polyline/points")
 
-		points = [LatLng(lat=x[0], lng=x[1]) for x in decoder.decode_line(p)]
+		try:
+			points = [LatLng(lat=x[0], lng=x[1]) for x in decoder.decode_line(p)]
+		except:
+			print "here",p,tree,self.start, self.end
+			print tree.findtext("status") == "OVER_QUERY_LIMIT"
+			raise NameError("new")
 
 		if self.reverse:
 			self.path_points = [x for x in reversed(points)]

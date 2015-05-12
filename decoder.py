@@ -10,7 +10,11 @@ def decode_line(encoded):
     (http://unitstep.net/blog/2008/08/02/decoding-google-maps-encoded-polylines-using-php/)
     """
 
-    encoded_len = len(encoded)
+    try:
+    	encoded_len = len(encoded)
+    except:
+	print encoded
+	raise NameError("Problem")
     index = 0
     array = []
     lat = 0

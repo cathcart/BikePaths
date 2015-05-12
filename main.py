@@ -27,7 +27,7 @@ def print_frame(time, time_delta, time_info, palette, bike_agents):
 	ax.axis([-700000, -694000, 7.044*pow(10,6), 6000 + 7.044*pow(10,6)])
 	ax.set_autoscale_on(False)
 	frame_time = time_info.start + (time/(time_info.steps))*time_info.duration
-	ax.text(-699900, 100+7.044e6, datetime.datetime.fromtimestamp(int(frame_time)).strftime('%Y-%m-%d %H:%M:%S'), bbox=dict(facecolor='white', alpha=1.0))
+	ax.text(-699900, 100+7.044e6, datetime.datetime.fromtimestamp(int(frame_time)).strftime('%A %d-%m-%y %H:%M:%S'), bbox=dict(facecolor='white', alpha=1.0))
 
 	for bike in bike_agents:
 		bike.call(ax, time)
