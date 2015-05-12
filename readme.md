@@ -11,6 +11,6 @@ This work was featured in the [Science Gallery Hack the City](https://dublin.sci
 
 
 ### Visualisations
-https://www.youtube.com/watch?v=c7Pmpm_dWv0&list=PLYHnaycp11CSIvhWhJAhdekKJINDZN0ez&index=2
+https://www.youtube.com/watch?v=_9m9Ygdxp8Q&index=1&list=PLYHnaycp11CSIvhWhJAhdekKJINDZN0ez
 
-[![BikePaths visualised journies](http://img.youtube.com/vi/_9m9Ygdxp8Q/0.jpg)](https://www.youtube.com/watch?v=c7Pmpm_dWv0&list=PLYHnaycp11CSIvhWhJAhdekKJINDZN0ez&index=2)
+[![BikePaths visualised journies](http://img.youtube.com/vi/_9m9Ygdxp8Q/0.jpg)](https://www.youtube.com/watch?v=_9m9Ygdxp8Q&index=1&list=PLYHnaycp11CSIvhWhJAhdekKJINDZN0ez)
